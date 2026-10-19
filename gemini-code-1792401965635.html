@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TekXYZ Mini Games Suite</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        limeBrand: '#a3e635',
+                        brandDark: '#0b1329',
+                        cardDark: '#121212',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Screen Navigation Visibility */
+        .app-screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            width: 100%;
+            height: 100%;
+        }
+        .app-screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .tc-screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .tc-screen.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Card Glow Backgrounds */
+        .card-green-glow {
+            background: linear-gradient(180deg, #10210b 0%, #080d05 100%);
+            border: 1px solid rgba(163, 230, 53, 0.2);
+            box-shadow: inset 0 0 15px rgba(163, 230, 53, 0.08);
+        }
+        .card-green-glow:active {
+            border-color: rgba(163, 230, 53, 0.6);
+            transform: scale(0.98);
+        }
+
+        /* LED Light Styling */
+        .led-off {
+            background: radial-gradient(circle at 30% 30%, #3a0d0d, #150000);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(255, 255, 255, 0.1);
+            border: 2px solid #222;
+        }
+
+        .led-on {
+            background: radial-gradient(circle at 35% 35%, #ff9999, #ff0000, #990000);
+            box-shadow: 0 0 15px #ff0000, 0 0 30px #ff3333, inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+            border: 2px solid #ff6666;
+        }
+
+        /* Ball Swing & Hit Animations */
+        @keyframes swing {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(1.5deg); }
+            75% { transform: rotate(-1.5deg); }
+        }
+
+        .ball-idle {
+            animation: swing 3s ease-in-out infinite;
+            transform-origin: top center;
+        }
+
+        @keyframes hitShake {
+            0% { transform: translateY(0) scale(1); }
+            20% { transform: translateY(-30px) scale(0.92, 1.08) rotate(5deg); }
+            40% { transform: translateY(-12px) scale(1.08, 0.92) rotate(-3deg); }
+            60% { transform: translateY(-4px) scale(0.98, 1.02); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .ball-hit {
+            animation: hitShake 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: top center;
+        }
+
+        /* Punch Weapon Animation */
+        @keyframes punchUp {
+            0% { transform: translateY(0) scale(1); }
+            35% { transform: translateY(-95px) scale(1.18); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
+        .glove-punch {
+            animation: punchUp 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        /* Pulse Error Flash */
+        @keyframes errorFlash {
+            0%, 100% { background-color: #0b1329; }
+            50% { background-color: #3b0c0c; }
+        }
+
+        .bg-error {
+            animation: errorFlash 0.4s ease-in-out 2;
+        }
+
+        /* Perfect Sphere Reaction Ball Base Styling */
+        .perfect-ball {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            position: relative;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* IDLE State: Red 3D Sphere */
+        .perfect-ball.state-idle {
+            background: radial-gradient(circle at 32% 28%, #ff6b6b 0%, #ee1d1d 45%, #900000 75%, #4a0000 100%);
+            box-shadow: inset -4px -4px 10px rgba(0, 0, 0, 0.6), inset 3px 3px 6px rgba(255, 255, 255, 0.4), 0 10px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Countdown/Ready State: Glowing Amber Yellow Ball */
+        .perfect-ball.state-ready {
+            background: radial-gradient(circle at 32% 28%, #fef08a 0%, #eab308 45%, #854d0e 75%, #422006 100%);
+            box-shadow: inset -4px -4px 10px rgba(0, 0, 0, 0.6), inset 3px 3px 6px rgba(255, 255, 255, 0.6), 0 0 22px rgba(234, 179, 8, 0.8);
+        }
+
+        /* GO State: Bright Neon Fluorescent Lime Green Ball */
+        .perfect-ball.state-go {
+            background: radial-gradient(circle at 32% 28%, #facc15 0%, #a3e635 35%, #4d7c0f 75%, #1a3a03 100%);
+            box-shadow: inset -4px -4px 10px rgba(0, 0, 0, 0.5), inset 3px 3px 6px rgba(255, 255, 255, 0.8), 0 0 25px #a3e635, 0 0 45px rgba(163, 230, 53, 0.8);
+        }
+
+        .perfect-ball::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        /* 3D Ball render style for Text & Color Game */
+        .ball-item {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset -8px -8px 16px rgba(0,0,0,0.35), 0 8px 16px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            will-change: transform;
+        }
+        .ball-item:active {
+            transform: scale(0.92) !important;
+        }
+
+        /* Pure Glove Item render style */
+        .glove-option-item {
+            width: 72px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+            will-change: transform;
+        }
+        .glove-option-item:active {
+            transform: scale(0.92) !important;
+        }
+
+        .golf-texture {
+            background-image: radial-gradient(rgba(0,0,0,0.15) 15%, transparent 16%);
+            background-size: 10px 10px;
+        }
+
+        .tc-skin-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            transition: all 0.15s ease;
+            position: relative;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+        .tc-skin-card.selected {
+            border-color: #a3e635;
+            box-shadow: 0 0 0 3px #a3e635;
+        }
+        .tc-skin-card.locked {
+            background-color: #f9fafb;
+            border-color: #d1d5db;
+        }
+
+        @keyframes lockShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .shake-item {
+            animation: lockShake 0.35s ease-in-out;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="h-full w-full bg-black text-white overflow-hidden flex justify-center">
+
+    <!-- MAIN APP CONTAINER FRAME -->
+    <div id="app-container" class="w-full max-w-md h-full flex flex-col justify-between relative bg-black overflow-hidden shadow-2xl border-x border-zinc-900">
+
+        <!-- ========================================================================= -->
+        <!-- 1. MAIN DASHBOARD SCREEN                                                  -->
+        <!-- ========================================================================= -->
+        <div id="screen-main-dashboard" class="app-screen active flex-col h-full justify-between overflow-y-auto no-scrollbar">
+            
+            <div class="px-4 pt-4 pb-24 space-y-5">
+                <!-- TOP HEADER -->
+                <header class="flex items-center justify-between py-1">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-full bg-limeBrand flex items-center justify-center font-black text-black text-xs italic">
+                            Z
+                        </div>
+                        <span class="text-2xl font-black tracking-tight text-white flex items-center">
+                            Tek<span class="text-limeBrand">XYZ</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-xs font-semibold">
+                        <button class="text-limeBrand flex items-center space-x-1 hover:opacity-80">
+                            <i class="fa-solid fa-plus text-xs"></i>
+                            <span>Add HitBuddy</span>
+                        </button>
+                        <button class="text-zinc-300 hover:text-white text-lg p-1">
+                            <i class="fa-regular fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- PRIZE GAMES BANNER -->
+                <section class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2 font-bold text-base">
+                            <span class="text-amber-400 text-lg">💰</span>
+                            <span>Prize Games</span>
+                        </div>
+                        <div class="bg-zinc-900 p-1 rounded-xl flex space-x-1 text-xs font-semibold">
+                            <button class="px-3 py-1 rounded-lg bg-zinc-700 text-white shadow">Current</button>
+                            <button class="px-3 py-1 rounded-lg text-zinc-400 hover:text-white">History</button>
+                        </div>
+                    </div>
+
+                    <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-zinc-100 via-white to-zinc-200 border border-zinc-300 shadow-xl p-4 flex justify-between items-center h-44 text-black">
+                        <div class="flex flex-col justify-center space-y-1 z-10 max-w-[62%]">
+                            <span class="text-xs sm:text-sm font-black italic tracking-widest text-black uppercase leading-none">
+                                ULTRA SPEED
+                            </span>
+                            <h2 class="text-2xl sm:text-3xl font-black italic tracking-tight text-lime-500 leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] uppercase">
+                                10-Sec Max
+                            </h2>
+                            <h3 class="text-xl sm:text-2xl font-black italic tracking-tighter text-black uppercase leading-none">
+                                COMPETITION
+                            </h3>
+                            <p class="text-[10px] font-extrabold tracking-wider text-zinc-600 pt-1">
+                                USD 1,200 PRIZE POOL
+                            </p>
+                        </div>
+
+                        <div class="relative flex items-center justify-center w-36 h-full z-10">
+                            <div class="w-16 h-16 rounded-full bg-lime-400 golf-texture border-2 border-lime-600 shadow-lg flex items-center justify-center transform -rotate-12">
+                                <span class="text-[8px] font-black text-black/60 tracking-tighter uppercase">TekXYZ</span>
+                            </div>
+                            <div class="absolute -right-1 text-5xl filter drop-shadow-md transform rotate-12">
+                                🥊
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 bg-radial from-lime-200/40 via-transparent to-transparent pointer-events-none"></div>
+                    </div>
+                </section>
+
+                <!-- DAILY GAMES SECTION -->
+                <section class="space-y-2">
+                    <div class="flex items-center space-x-2 font-bold text-base">
+                        <span class="text-lg">📅</span>
+                        <span>Daily Games</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="card-green-glow rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 h-28 relative group cursor-pointer">
+                            <i class="fa-solid fa-circle-question absolute top-2 right-2 text-zinc-600 text-xs"></i>
+                            <i class="fa-solid fa-bolt text-2xl text-limeBrand"></i>
+                            <span class="font-extrabold italic text-sm tracking-wider">SPEED</span>
+                        </div>
+                        <div class="card-green-glow rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 h-28 relative group cursor-pointer">
+                            <i class="fa-solid fa-circle-question absolute top-2 right-2 text-zinc-600 text-xs"></i>
+                            <i class="fa-solid fa-infinity text-2xl text-limeBrand"></i>
+                            <span class="font-extrabold italic text-sm tracking-wider">COMBO</span>
+                        </div>
+                        <div class="card-green-glow rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 h-28 relative group cursor-pointer">
+                            <i class="fa-solid fa-circle-question absolute top-2 right-2 text-zinc-600 text-xs"></i>
+                            <i class="fa-solid fa-video text-2xl text-limeBrand"></i>
+                            <span class="font-extrabold italic text-sm tracking-wider">VIDEO MODE</span>
+                        </div>
+                        <div class="card-green-glow rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 h-28 relative group cursor-pointer">
+                            <i class="fa-solid fa-circle-question absolute top-2 right-2 text-zinc-600 text-xs"></i>
+                            <i class="fa-solid fa-crosshairs text-2xl text-limeBrand"></i>
+                            <span class="font-extrabold italic text-sm tracking-wider">TARGET</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MINI GAMES SECTION -->
+                <section class="space-y-2">
+                    <div class="flex items-center space-x-2 font-bold text-base">
+                        <i class="fa-solid fa-gamepad text-purple-400 text-lg"></i>
+                        <span>Mini Games</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div id="btn-launch-reaction" class="card-green-glow rounded-2xl p-5 flex items-center justify-center text-center h-28 cursor-pointer hover:border-limeBrand transition-all active:scale-95">
+                            <span class="font-bold text-base text-zinc-100">Reaction Game</span>
+                        </div>
+
+                        <div id="btn-launch-text-color" class="card-green-glow rounded-2xl p-5 flex items-center justify-center text-center h-28 cursor-pointer hover:border-limeBrand transition-all active:scale-95">
+                            <span class="font-bold text-base text-zinc-100">Text and Color</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- FIXED BOTTOM NAVBAR -->
+            <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-black/90 backdrop-blur-md border-t border-zinc-800 px-6 py-2 flex justify-between items-center z-50">
+                <button class="text-limeBrand text-xl p-2 flex flex-col items-center">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <button class="text-zinc-500 hover:text-zinc-300 text-xl p-2 flex flex-col items-center">
+                    <i class="fa-solid fa-chart-simple"></i>
+                </button>
+                <button class="w-12 h-12 rounded-full bg-limeBrand text-black font-extrabold text-xs tracking-tighter flex items-center justify-center -mt-6 shadow-lg shadow-limeBrand/30 active:scale-90 transition-transform">
+                    PLAY
+                </button>
+                <button class="text-zinc-500 hover:text-zinc-300 text-xl p-2 relative flex flex-col items-center">
+                    <i class="fa-regular fa-comment-dots"></i>
+                    <span class="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">4</span>
+                </button>
+                <button class="text-zinc-500 hover:text-zinc-300 text-xl p-2 flex flex-col items-center">
+                    <i class="fa-regular fa-user"></i>
+                </button>
+            </nav>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- 2. REACTION PUNCH GAME SCREEN                                             -->
+        <!-- ========================================================================= -->
+        <div id="screen-reaction-game" class="app-screen flex-col h-full justify-between bg-[#0b1329] p-4 relative overflow-hidden transition-colors duration-300">
+            
+            <!-- TOP BAR -->
+            <div class="flex justify-between items-center z-20 pt-2 w-full">
+                <button class="btn-back-to-main flex items-center space-x-1 bg-slate-900/80 hover:bg-slate-800 text-white font-extrabold px-3 py-2 rounded-xl text-xs tracking-wide border border-slate-700/50 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-left text-limeBrand"></i>
+                    <span>Back</span>
+                </button>
+
+                <button id="customizeBtn" class="bg-[#a3e635] hover:bg-[#84cc16] active:scale-95 text-black font-extrabold px-4 py-2 rounded-xl text-xs tracking-wide shadow-lg shadow-lime-500/20 transition-all uppercase">
+                    CUSTOMIZE
+                </button>
+
+                <div class="flex items-center gap-1.5 text-base font-black text-white bg-slate-900/60 px-3 py-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                    <i class="fa-solid font-900 fa-gamepad text-lg text-slate-200"></i>
+                    <span id="playCount">0</span>
+                </div>
+            </div>
+
+            <!-- MAIN INTERACTIVE TOUCH AREA -->
+            <div id="touchArea" class="flex-1 flex flex-col items-center justify-between py-4 cursor-pointer z-10 my-auto w-full">
+                
+                <!-- LIGHT BAR & BALL SECTION -->
+                <div class="w-full flex flex-col items-center relative mt-2">
+                    <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border-2 border-slate-600/60 rounded-3xl p-3 px-4 shadow-2xl flex justify-between items-center w-full max-w-xs relative z-10 backdrop-blur-md">
+                        <div id="light1" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
+                        <div id="light2" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
+                        <div id="light3" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
+                        <div id="light4" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
+                        <div id="light5" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
+                    </div>
+
+                    <!-- Dynamic State Sphere Ball -->
+                    <div id="ballContainer" class="flex flex-col items-center ball-idle -mt-1 origin-top transition-all">
+                        <div class="w-1 h-20 bg-gradient-to-b from-red-700 to-red-500 shadow-sm"></div>
+                        <div class="w-4 h-3 bg-slate-800 rounded-sm border border-slate-600"></div>
+                        <div id="reactionBall" class="perfect-ball state-idle flex items-center justify-center">
+                            <div class="w-2.5 h-2.5 rounded-full bg-black/40 border border-black/30"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WEAPON DISPLAY -->
+                <div id="gloveContainer" class="my-auto transition-transform duration-100 flex justify-center items-center h-32">
+                    <div id="weaponGraphic" class="flex gap-4 items-center justify-center">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS AREA (START / RESTART + SHARE) -->
+                <div class="w-full flex items-center justify-center gap-3 my-1 px-4">
+                    <button id="actionBtn" class="w-56 py-2.5 rounded-full border-2 border-limeBrand text-limeBrand font-extrabold text-xl tracking-wide shadow-lg hover:bg-limeBrand/10 active:scale-95 transition-all">
+                        Start
+                    </button>
+                    <!-- 新增：一局结束时显示的分享按钮 -->
+                    <button id="reactionShareBtn" class="hidden w-12 h-12 bg-slate-800 border-2 border-limeBrand text-limeBrand rounded-full flex items-center justify-center text-lg shadow-lg hover:bg-slate-700 active:scale-95 transition-all flex-shrink-0">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    </button>
+                </div>
+
+                <!-- MESSAGES & BEST TIME DISPLAY -->
+                <div class="text-center w-full px-4 mb-2 flex flex-col items-center justify-center min-h-[110px]">
+                    <div id="statusMessage" class="text-base font-semibold text-slate-200 leading-snug max-w-xs transition-colors duration-200 flex flex-col items-center justify-center">
+                        <!-- Dynamic prompt injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CUSTOMIZE SHOP MODAL -->
+            <div id="customizeModal" class="fixed inset-0 bg-black/95 z-50 flex flex-col transition-opacity duration-300 opacity-0 pointer-events-none max-w-md mx-auto">
+                <div class="flex items-center justify-center relative p-5 border-b border-slate-800">
+                    <button id="closeCustomizeBtn" class="absolute left-5 text-2xl text-white hover:text-lime-400 active:scale-90 transition-transform">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <h2 class="text-xl font-black tracking-wider text-white">CUSTOMIZE</h2>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 w-full">
+                    <div class="grid grid-cols-2 gap-4 pb-8" id="skinGrid"></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- 3. TEXT AND COLOR GAME SCREEN                                             -->
+        <!-- ========================================================================= -->
+        <div id="screen-text-color-game" class="app-screen flex-col h-full bg-white text-black relative">
+            
+            <!-- TOP BAR -->
+            <div id="tc-top-nav-bar" class="flex items-center justify-between w-full px-6 pt-4 pb-2 z-20 bg-white">
+                <button class="btn-back-to-main flex items-center space-x-1.5 text-black hover:opacity-70 active:scale-95 transition-transform bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200">
+                    <i class="fa-solid fa-chevron-left text-black text-xs"></i>
+                    <span class="font-extrabold text-xs uppercase tracking-wider">Back</span>
+                </button>
+                <div></div>
+            </div>
+
+            <div class="w-full h-full flex flex-col justify-between px-6 pb-6 pt-2 relative">
+
+                <!-- 1. START & DIFFICULTY SELECTION SUB-SCREEN -->
+                <section id="tc-screen-start" class="tc-screen active flex-col justify-between items-center h-full my-auto text-center py-4">
+                    <div class="w-full flex flex-col items-center justify-center space-y-4">
+                        <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-black pt-1">
+                            Click to start
+                        </h1>
+
+                        <!-- DIFFICULTY CHOICE CARDS -->
+                        <div class="w-full space-y-2.5 px-2 pt-1">
+                            <!-- Easy Card -->
+                            <button id="tc-diff-easy" class="w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm">
+                                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center text-lg font-black flex-shrink-0">
+                                    ⚡
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-base font-black text-black">Easy</div>
+                                    <div class="text-[11px] text-gray-500 font-medium leading-tight">Learn the colors and build your streak.</div>
+                                </div>
+                            </button>
+
+                            <!-- Hard Card -->
+                            <button id="tc-diff-hard" class="w-full rounded-2xl border-2 border-gray-200 p-3 flex items-center space-x-3 bg-gray-50 text-left transition-all shadow-sm">
+                                <div id="tc-hard-icon" class="w-9 h-9 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
+                                    <i class="fa-solid fa-lock"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-base font-black text-black">Hard</span>
+                                        <span id="tc-hard-tag" class="text-[9px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">LOCKED</span>
+                                    </div>
+                                    <div class="text-[11px] text-gray-500 font-medium leading-tight">4 static balls • 2.0s per question timer bar.</div>
+                                </div>
+                            </button>
+
+                            <!-- Insane Card -->
+                            <button id="tc-diff-insane" class="w-full rounded-2xl border-2 border-gray-200 p-3 flex items-center space-x-3 bg-gray-50 text-left transition-all shadow-sm">
+                                <div id="tc-insane-icon" class="w-9 h-9 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
+                                    <i class="fa-solid fa-lock"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-base font-black text-black">Insane</span>
+                                        <span id="tc-insane-tag" class="text-[9px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">LOCKED</span>
+                                    </div>
+                                    <div class="text-[11px] text-gray-500 font-medium leading-tight">4 floating bouncing balls • 2.0s timer.</div>
+                                </div>
+                            </button>
+
+                            <!-- Insane2 Card -->
+                            <button id="tc-diff-insane2" class="w-full rounded-2xl border-2 border-gray-200 p-3 flex items-center space-x-3 bg-gray-50 text-left transition-all shadow-sm">
+                                <div id="tc-insane2-icon" class="w-9 h-9 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
+                                    <i class="fa-solid fa-lock"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-base font-black text-black">Insane 2</span>
+                                        <span id="tc-insane2-tag" class="text-[9px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">LOCKED</span>
+                                    </div>
+                                    <div class="text-[11px] text-gray-500 font-medium leading-tight">Static balls • Dynamic rule changes (Color vs Meaning).</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- How to Play -->
+                        <div class="space-y-1 pt-1">
+                            <h2 class="text-xl font-black tracking-tight text-black">
+                                How to play
+                            </h2>
+                            <p class="text-gray-600 text-xs max-w-xs leading-snug">
+                                Tap the circle matching the rule shown on top.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. GAMEPLAY SUB-SCREEN -->
+                <section id="tc-screen-game" class="tc-screen flex-col justify-between items-center h-full py-2">
+                    <div class="w-full flex justify-between items-center pt-2">
+                        <button id="tc-btn-customize-game" class="bg-limeBrand hover:bg-lime-400 text-black font-extrabold text-xs tracking-wider px-4 py-2.5 rounded-2xl shadow-sm active:scale-95 transition-all">
+                            CUSTOMIZE
+                        </button>
+
+                        <div class="flex items-center space-x-2 font-bold text-lg text-black">
+                            <i class="fa-solid fa-gamepad text-xl"></i>
+                            <span id="tc-game-coins-display">45</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center justify-center space-y-1 my-auto w-full">
+                        <div id="tc-game-timer" class="text-5xl sm:text-6xl font-black tracking-tight text-black">
+                            30.00
+                        </div>
+                        <div class="flex items-center space-x-4 pt-1">
+                            <div class="text-lg font-bold text-black">
+                                Points: <span id="tc-game-points" class="text-black">0</span>
+                            </div>
+                            <div class="text-sm font-semibold text-gray-500 border-l border-gray-300 pl-4">
+                                Best: <span id="tc-game-best-display" class="font-extrabold text-black">0</span>
+                            </div>
+                        </div>
+                        <div id="tc-difficulty-badge" class="mt-1 text-xs font-black uppercase px-3 py-0.5 rounded-full bg-black text-limeBrand tracking-wider">
+                            EASY
+                        </div>
+                    </div>
+
+                    <!-- TARGET WORD AREA WITH COUNTDOWN PROGRESS BAR -->
+                    <div id="tc-target-container" class="my-auto py-2 transition-all flex flex-col items-center w-full">
+                        <!-- Dynamic Rule Indicator Text for Insane2 -->
+                        <div id="tc-rule-indicator" class="hidden text-xs font-extrabold tracking-wider uppercase px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-300 mb-2 shadow-sm">
+                            RULE: TAP MEANING
+                        </div>
+
+                        <span id="tc-target-word" class="text-5xl sm:text-6xl font-extrabold tracking-wide capitalize transition-transform">
+                            red
+                        </span>
+
+                        <!-- Countdown Progress Bar for Hard, Insane & Insane2 Mode -->
+                        <div id="tc-progress-bar-wrap" class="w-48 h-2 bg-gray-200 rounded-full mt-3 overflow-hidden opacity-0 transition-opacity">
+                            <div id="tc-progress-bar" class="h-full bg-limeBrand w-full transition-all duration-75 ease-linear"></div>
+                        </div>
+                    </div>
+
+                    <!-- OPTIONS CONTAINER (Supports static layout & 260px physics bounding box) -->
+                    <div id="tc-options-container" class="w-full relative flex flex-wrap justify-center gap-3 items-center pb-4 pt-1 min-h-[260px] max-h-[280px] overflow-hidden rounded-2xl">
+                        <!-- Dynamic Options Generated via JS -->
+                    </div>
+                </section>
+
+                <!-- 3. CUSTOMIZE STORE SUB-SCREEN -->
+                <section id="tc-screen-customize" class="tc-screen flex-col justify-start h-full py-2 space-y-4">
+                    <div class="w-full flex items-center justify-center relative py-4 bg-white">
+                        <button id="tc-btn-back-customize" class="absolute left-0 text-2xl font-bold text-black p-2 hover:opacity-70 active:scale-95 transition-transform">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <h1 class="text-lg font-bold tracking-wider text-black uppercase">
+                            CUSTOMIZE
+                        </h1>
+                    </div>
+
+                    <div id="tc-skins-grid" class="grid grid-cols-2 gap-3 w-full overflow-y-auto pb-6 px-1 max-h-[70vh]"></div>
+                </section>
+
+                <!-- 4. FINAL SCORE RESULT SUB-SCREEN -->
+                <section id="tc-screen-result" class="tc-screen flex-col justify-between items-center h-full py-6 text-center">
+                    <div class="flex-1 flex flex-col items-center justify-center space-y-5 w-full">
+                        <div class="text-6xl text-amber-400 animate-bounce">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+
+                        <div class="space-y-1">
+                            <h2 class="text-2xl font-extrabold text-black tracking-tight">
+                                Nice blasting!
+                            </h2>
+                            <h3 class="text-lg font-bold text-gray-700">
+                                Here's your final score
+                            </h3>
+                        </div>
+
+                        <div id="tc-result-final-score" class="text-5xl font-black text-black my-1">
+                            25
+                        </div>
+
+                        <div id="tc-unlock-notify" class="hidden bg-lime-100 text-lime-800 font-extrabold px-4 py-1.5 rounded-full text-xs border border-lime-300 animate-pulse">
+                            🎉 Next Difficulty Unlocked!
+                        </div>
+
+                        <div id="tc-record-tag" class="hidden bg-emerald-100 text-emerald-600 font-bold px-4 py-1 rounded-full text-xs border border-emerald-300">
+                            New Personal Best!
+                        </div>
+
+                        <div class="bg-gray-100 rounded-2xl p-3 w-44 border border-gray-200 space-y-0.5">
+                            <div class="text-[11px] text-gray-500 font-bold">Best Score</div>
+                            <div id="tc-result-best-score" class="text-lg font-extrabold text-black">25</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center space-x-6 w-full pt-2">
+                        <button id="tc-btn-share" class="w-12 h-12 bg-pink-50 hover:bg-pink-100 rounded-2xl flex items-center justify-center text-lg text-black active:scale-95 transition-all border border-pink-100">
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                        </button>
+                        <button id="tc-btn-restart" class="w-12 h-12 bg-pink-50 hover:bg-pink-100 rounded-2xl flex items-center justify-center text-xl text-black active:scale-95 transition-all border border-pink-100">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- 5. YOU LOST SUB-SCREEN -->
+                <section id="tc-screen-lost" class="tc-screen flex-col justify-between items-center h-full py-6 text-center relative">
+                    <div class="w-full flex justify-end px-2">
+                        <button id="tc-btn-lost-close" class="text-xl text-black p-2 hover:opacity-70 active:scale-95">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex-1 flex flex-col items-center justify-center space-y-4 my-auto">
+                        <div class="text-6xl my-2">😢</div>
+
+                        <h2 class="text-4xl font-black text-black tracking-tight">
+                            You lost
+                        </h2>
+
+                        <div class="space-y-2">
+                            <p class="text-base font-bold text-black">
+                                Points up to this point: <span id="tc-lost-points">0</span>
+                            </p>
+
+                            <div class="bg-gray-100 rounded-2xl px-4 py-2 border border-gray-200 inline-block">
+                                <div class="text-xs text-gray-500 font-bold">Best Score</div>
+                                <div id="tc-lost-best-score" class="text-base font-extrabold text-black">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full pb-4 flex justify-center">
+                        <button id="tc-btn-lost-restart" class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center text-2xl text-black hover:bg-gray-200 active:scale-90 transition-transform shadow">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================================= -->
+    <!-- AUDIO & ALL GAME ENGINES SCRIPT                                           -->
+    <!-- ========================================================================= -->
+    <script>
+        /* AUDIO SYNTHESIZER ENGINE */
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playLightBeep() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(700, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            playGoBeep() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+                gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            }
+
+            playBuzzer() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, this.ctx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.35);
+            }
+
+            playPunchHit() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+                gain.gain.setValueAtTime(0.6, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+
+                const bufferSize = this.ctx.sampleRate * 0.1;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(600, now);
+                const noiseGain = this.ctx.createGain();
+                noiseGain.gain.setValueAtTime(0.5, now);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                noise.connect(filter);
+                filter.connect(noiseGain);
+                noiseGain.connect(this.ctx.destination);
+                noise.start(now);
+            }
+
+            playPop() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const now = this.ctx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.08);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }
+
+            playError() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const now = this.ctx.currentTime;
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(90, now + 0.22);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.22);
+            }
+
+            playFanfare() {
+                this.init();
+                if (!this.ctx) return;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    const now = this.ctx.currentTime + i * 0.08;
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                });
+            }
+        }
+
+        const globalAudio = new SoundEngine();
+
+        /* ROUTING MANAGER */
+        const AppNav = {
+            switchScreen(screenId) {
+                document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(screenId);
+                if (target) target.classList.add('active');
+            }
+        };
+
+
+        /* ========================================================================= */
+        /* 1. REACTION PUNCH GAME ENGINE                                             */
+        /* ========================================================================= */
+        const REACTION_STATE = {
+            IDLE: 'IDLE',
+            COUNTDOWN: 'COUNTDOWN',
+            WAITING_OFF: 'WAITING_OFF',
+            GO: 'GO',
+            FINISHED: 'FINISHED',
+            FAILED: 'FAILED'
+        };
+
+        const REACTION_SKINS = [
+            { id: 'fist', name: 'Free Fist', emoji: '✊', price: 0, unlocked: true, type: 'emoji' },
+            { id: 'gloves', name: 'Boxing Gloves', emoji: '🥊', price: 500, unlocked: true, type: 'custom_svg' },
+            { id: 'pingpong', name: 'Table Tennis', emoji: '🏓', price: 500, unlocked: false, type: 'emoji' },
+            { id: 'flipflop', name: 'Flip Flops', emoji: '🩴', price: 500, unlocked: false, type: 'emoji' },
+            { id: 'tennis', name: 'Tennis Racket', emoji: '🎾', price: 500, unlocked: false, type: 'emoji' },
+            { id: 'badminton', name: 'Badminton', emoji: '🏸', price: 500, unlocked: false, type: 'emoji' }
+        ];
+
+        const ReactionPunchGame = {
+            currentState: REACTION_STATE.IDLE,
+            playCount: 0,
+            bestTime: null,
+            lastScore: null,
+            startTime: 0,
+            countdownTimer: null,
+            randomOffTimer: null,
+            currentEquippedSkin: 'gloves',
+
+            lights: [],
+            touchArea: null,
+            statusMessage: null,
+            playCountElem: null,
+            gloveContainer: null,
+            weaponGraphic: null,
+            ballContainer: null,
+            reactionBall: null,
+            gameContainer: null,
+            customizeBtn: null,
+            closeCustomizeBtn: null,
+            customizeModal: null,
+            skinGrid: null,
+            actionBtn: null,
+            reactionShareBtn: null,
+
+            boxingGlovesSVG: `
+                <div class="flex gap-2 items-center justify-center filter drop-shadow-2xl">
+                    <svg width="100" height="100" viewBox="0 0 100 100" class="transform -scale-x-100 rotate-12">
+                        <path d="M25 45 C15 30, 25 10, 50 10 C75 10, 85 30, 80 50 C75 70, 65 80, 50 80 C35 80, 25 65, 25 45 Z" fill="#ef4444" stroke="#991b1b" stroke-width="3"/>
+                        <path d="M18 40 C10 42, 8 58, 20 62 C30 65, 35 55, 30 45 Z" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+                        <rect x="30" y="72" width="40" height="18" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                        <text x="50" y="84" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="Arial">TekXYZ</text>
+                        <path d="M40 18 Q 55 12 68 22" fill="none" stroke="#fca5a5" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+                    </svg>
+                    <svg width="100" height="100" viewBox="0 0 100 100" class="-rotate-12">
+                        <path d="M25 45 C15 30, 25 10, 50 10 C75 10, 85 30, 80 50 C75 70, 65 80, 50 80 C35 80, 25 65, 25 45 Z" fill="#ef4444" stroke="#991b1b" stroke-width="3"/>
+                        <path d="M18 40 C10 42, 8 58, 20 62 C30 65, 35 55, 30 45 Z" fill="#dc2626" stroke="#991b1b" stroke-width="2"/>
+                        <rect x="30" y="72" width="40" height="18" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                        <text x="50" y="84" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="Arial">TekXYZ</text>
+                        <path d="M40 18 Q 55 12 68 22" fill="none" stroke="#fca5a5" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+                    </svg>
+                </div>
+            `,
+
+            init() {
+                this.lights = [
+                    document.getElementById('light1'),
+                    document.getElementById('light2'),
+                    document.getElementById('light3'),
+                    document.getElementById('light4'),
+                    document.getElementById('light5')
+                ];
+                this.touchArea = document.getElementById('touchArea');
+                this.statusMessage = document.getElementById('statusMessage');
+                this.playCountElem = document.getElementById('playCount');
+                this.gloveContainer = document.getElementById('gloveContainer');
+                this.weaponGraphic = document.getElementById('weaponGraphic');
+                this.ballContainer = document.getElementById('ballContainer');
+                this.reactionBall = document.getElementById('reactionBall');
+                this.gameContainer = document.getElementById('screen-reaction-game');
+                this.actionBtn = document.getElementById('actionBtn');
+                this.reactionShareBtn = document.getElementById('reactionShareBtn');
+
+                this.customizeBtn = document.getElementById('customizeBtn');
+                this.closeCustomizeBtn = document.getElementById('closeCustomizeBtn');
+                this.customizeModal = document.getElementById('customizeModal');
+                this.skinGrid = document.getElementById('skinGrid');
+
+                this.renderWeapon();
+                this.renderSkinGrid();
+                this.setupEventListeners();
+                this.setIdleState();
+            },
+
+            setBallState(stateClass) {
+                if (!this.reactionBall) return;
+                this.reactionBall.classList.remove('state-idle', 'state-ready', 'state-go');
+                this.reactionBall.classList.add(stateClass);
+            },
+
+            setIdleState() {
+                this.currentState = REACTION_STATE.IDLE;
+                this.setBallState('state-idle');
+                if (this.actionBtn) {
+                    this.actionBtn.innerText = 'Start';
+                    this.actionBtn.classList.remove('hidden');
+                }
+                if (this.reactionShareBtn) {
+                    this.reactionShareBtn.classList.add('hidden');
+                }
+                const bestVal = this.bestTime ? `${this.bestTime}s` : '--';
+                this.statusMessage.innerHTML = `
+                    <div class="text-sm font-extrabold text-slate-300 mb-1">Best Time: <span class="text-limeBrand">${bestVal}</span></div>
+                    <div class="text-base font-semibold text-slate-200">Tap Start to begin, then tap again when lights go out!</div>
+                `;
+                this.statusMessage.className = "text-center leading-snug max-w-xs transition-colors duration-200 flex flex-col items-center justify-center";
+            },
+
+            renderWeapon() {
+                const skin = REACTION_SKINS.find(s => s.id === this.currentEquippedSkin);
+                if (skin.type === 'custom_svg') {
+                    this.weaponGraphic.innerHTML = this.boxingGlovesSVG;
+                } else {
+                    this.weaponGraphic.innerHTML = `<span class="text-8xl filter drop-shadow-2xl hover:scale-105 transition-transform">${skin.emoji}</span>`;
+                }
+            },
+
+            renderSkinGrid() {
+                this.skinGrid.innerHTML = '';
+                REACTION_SKINS.forEach(skin => {
+                    const isEquipped = skin.id === this.currentEquippedSkin;
+                    const card = document.createElement('div');
+                    card.className = `relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all cursor-pointer ${
+                        isEquipped 
+                            ? 'border-lime-400 bg-slate-800/90 shadow-lg shadow-lime-500/10' 
+                            : skin.unlocked 
+                                ? 'border-slate-700 bg-slate-900/60 hover:border-slate-500' 
+                                : 'border-slate-800 bg-slate-950/40 opacity-80'
+                    }`;
+
+                    let content = `
+                        <div class="text-4xl mb-2">${skin.emoji}</div>
+                        <div class="text-xs font-bold text-slate-300 mb-1">${skin.name}</div>
+                    `;
+
+                    if (isEquipped) {
+                        content += `<span class="text-[9px] font-black tracking-wider uppercase text-lime-400 bg-lime-950/80 px-2 py-0.5 rounded-md border border-lime-500/30">EQUIPPED</span>`;
+                    } else if (skin.unlocked) {
+                        content += `<span class="text-[9px] font-bold text-slate-400">UNLOCKED</span>`;
+                    } else {
+                        content += `
+                            <div class="flex items-center gap-1 text-amber-400 font-extrabold text-xs bg-amber-950/40 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                                <span>${skin.price}</span>
+                                <i class="fa-solid fa-coins text-amber-400 text-[10px]"></i>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = content;
+                    card.addEventListener('click', () => this.handleSkinSelect(skin));
+                    this.skinGrid.appendChild(card);
+                });
+            },
+
+            handleSkinSelect(skin) {
+                globalAudio.init();
+                if (skin.unlocked) {
+                    this.currentEquippedSkin = skin.id;
+                    this.renderWeapon();
+                    this.renderSkinGrid();
+                } else {
+                    this.showToast(`Locked! Requires ${skin.price} coins.`);
+                }
+            },
+
+            showToast(msg) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-10 left-1/2 -translate-x-1/2 bg-red-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-2xl z-50 transition-all duration-300';
+                toast.innerText = msg;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => toast.remove(), 300);
+                }, 1800);
+            },
+
+            resetLights() {
+                this.lights.forEach(light => {
+                    light.className = 'w-11 h-11 rounded-full led-off transition-all duration-150';
+                });
+            },
+
+            handleScreenTap(e) {
+                if (e.target.closest('#customizeBtn') || e.target.closest('#customizeModal') || e.target.closest('.btn-back-to-main') || e.target.closest('#reactionShareBtn')) return;
+
+                globalAudio.init();
+
+                switch (this.currentState) {
+                    case REACTION_STATE.IDLE:
+                        if (e.target.closest('#actionBtn')) {
+                            this.startNewRound();
+                        }
+                        break;
+
+                    case REACTION_STATE.FINISHED:
+                    case REACTION_STATE.FAILED:
+                        this.setIdleState();
+                        break;
+
+                    case REACTION_STATE.COUNTDOWN:
+                    case REACTION_STATE.WAITING_OFF:
+                        this.triggerJumpStart();
+                        break;
+
+                    case REACTION_STATE.GO:
+                        this.triggerPunchSuccess();
+                        break;
+                }
+            },
+
+            startNewRound() {
+                this.playCount++;
+                this.playCountElem.innerText = this.playCount;
+
+                this.clearTimers();
+                this.resetLights();
+                this.gameContainer.classList.remove('bg-error');
+
+                this.currentState = REACTION_STATE.COUNTDOWN;
+                this.setBallState('state-ready');
+                if (this.actionBtn) {
+                    this.actionBtn.classList.add('hidden');
+                }
+                if (this.reactionShareBtn) {
+                    this.reactionShareBtn.classList.add('hidden');
+                }
+                this.statusMessage.innerText = "Tap when all 5 lights go out!";
+                this.statusMessage.className = "text-base font-semibold text-amber-400 leading-snug max-w-xs text-center flex flex-col items-center justify-center";
+
+                let lightIndex = 0;
+
+                this.countdownTimer = setInterval(() => {
+                    if (lightIndex < 5) {
+                        this.lights[lightIndex].className = 'w-11 h-11 rounded-full led-on transition-all duration-150';
+                        globalAudio.playLightBeep();
+                        lightIndex++;
+                    } else {
+                        clearInterval(this.countdownTimer);
+                        this.currentState = REACTION_STATE.WAITING_OFF;
+
+                        const randomDelay = Math.floor(Math.random() * 1500) + 1000;
+                        this.randomOffTimer = setTimeout(() => {
+                            this.extinguishLightsAndStartTimer();
+                        }, randomDelay);
+                    }
+                }, 1000);
+            },
+
+            extinguishLightsAndStartTimer() {
+                this.resetLights();
+                globalAudio.playGoBeep();
+                this.startTime = performance.now();
+                this.currentState = REACTION_STATE.GO;
+                this.setBallState('state-go');
+
+                this.statusMessage.innerText = "PUNCH NOW!";
+                this.statusMessage.className = "text-2xl font-black text-lime-400 tracking-wider animate-bounce text-center flex flex-col items-center justify-center";
+            },
+
+            triggerJumpStart() {
+                this.clearTimers();
+                this.resetLights();
+                globalAudio.playBuzzer();
+                this.currentState = REACTION_STATE.FAILED;
+                this.lastScore = null;
+                this.setBallState('state-idle');
+
+                if (this.actionBtn) {
+                    this.actionBtn.innerText = 'RESTART';
+                    this.actionBtn.classList.remove('hidden');
+                }
+                if (this.reactionShareBtn) {
+                    this.reactionShareBtn.classList.remove('hidden');
+                }
+
+                this.gameContainer.classList.add('bg-error');
+                setTimeout(() => this.gameContainer.classList.remove('bg-error'), 800);
+
+                this.statusMessage.innerHTML = `<div class="text-base font-bold text-red-500">Failed, Jump Start! Tap RESTART to try again</div>`;
+                this.statusMessage.className = "text-center leading-snug max-w-xs flex flex-col items-center justify-center";
+            },
+
+            triggerPunchSuccess() {
+                const endTime = performance.now();
+                const reactionTimeSec = ((endTime - this.startTime) / 1000).toFixed(3);
+                this.currentState = REACTION_STATE.FINISHED;
+                this.lastScore = reactionTimeSec;
+
+                globalAudio.playPunchHit();
+
+                if (this.bestTime === null || parseFloat(reactionTimeSec) < parseFloat(this.bestTime)) {
+                    this.bestTime = reactionTimeSec;
+                }
+
+                if (this.actionBtn) {
+                    this.actionBtn.innerText = 'RESTART';
+                    this.actionBtn.classList.remove('hidden');
+                }
+                if (this.reactionShareBtn) {
+                    this.reactionShareBtn.classList.remove('hidden');
+                }
+
+                this.gloveContainer.classList.add('glove-punch');
+                setTimeout(() => {
+                    this.ballContainer.classList.remove('ball-idle');
+                    this.ballContainer.classList.add('ball-hit');
+                }, 100);
+
+                setTimeout(() => {
+                    this.gloveContainer.classList.remove('glove-punch');
+                    this.ballContainer.classList.remove('ball-hit');
+                    this.ballContainer.classList.add('ball-idle');
+                }, 550);
+
+                this.statusMessage.innerHTML = `
+                    <div class="text-4xl sm:text-5xl font-black text-limeBrand tracking-tight drop-shadow-md my-1">${reactionTimeSec}s</div>
+                    <div class="text-xs font-bold text-slate-400">Best Time: <span class="text-slate-200">${this.bestTime}s</span></div>
+                    <span class="text-xs font-normal text-slate-300 mt-2">Tap RESTART to play again</span>
+                `;
+                this.statusMessage.className = "text-center leading-snug max-w-xs flex flex-col items-center justify-center";
+            },
+
+            clearTimers() {
+                if (this.countdownTimer) clearInterval(this.countdownTimer);
+                if (this.randomOffTimer) clearTimeout(this.randomOffTimer);
+            },
+
+            setupEventListeners() {
+                this.touchArea.addEventListener('pointerdown', (e) => this.handleScreenTap(e));
+
+                if (this.actionBtn) {
+                    this.actionBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.handleScreenTap(e);
+                    });
+                }
+
+                if (this.reactionShareBtn) {
+                    this.reactionShareBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        globalAudio.playPop();
+                        const shareText = this.lastScore 
+                            ? `My reaction time is ${this.lastScore}s in TekXYZ Reaction Game! Can you beat me?`
+                            : `I just played TekXYZ Reaction Game! Try it out!`;
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(shareText);
+                            alert('Score copied to clipboard!');
+                        } else {
+                            alert(shareText);
+                        }
+                    });
+                }
+
+                this.customizeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    globalAudio.init();
+                    this.customizeModal.classList.remove('opacity-0', 'pointer-events-none');
+                    this.customizeModal.classList.add('opacity-100');
+                });
+
+                this.closeCustomizeBtn.addEventListener('click', () => {
+                    this.customizeModal.classList.add('opacity-0', 'pointer-events-none');
+                    this.customizeModal.classList.remove('opacity-100');
+                });
+            }
+        };
+
+
+        /* ========================================================================= */
+        /* 2. TEXT AND COLOR GAME ENGINE                                             */
+        /* ========================================================================= */
+        const ALL_COLORS = [
+            { id: 'red', name: 'red', hex: '#ef4444' },
+            { id: 'yellow', name: 'yellow', hex: '#facc15' },
+            { id: 'green', name: 'green', hex: '#22c55e' },
+            { id: 'blue', name: 'blue', hex: '#3b82f6' },
+            { id: 'purple', name: 'purple', hex: '#a855f7' },
+            { id: 'orange', name: 'orange', hex: '#f97316' }
+        ];
+
+        const TC_SKINS = [
+            { id: 'golf', name: 'TekXYZ Golf Ball', price: 0, type: 'texture' },
+            { id: 'boxing', name: 'Boxing Glove', price: 0, symbol: '🥊', unlocked: true },
+            { id: 'star', name: 'Star', price: 500, symbol: '⭐' },
+            { id: 'diamond', name: 'Diamond', price: 500, symbol: '💎' },
+            { id: 'basketball', name: 'Basketball', price: 500, symbol: '🏀' },
+            { id: 'lightning', name: 'Lightning', price: 500, symbol: '⚡' }
+        ];
+
+        const TextColorGame = {
+            points: 0,
+            coins: 45,
+            timeLeft: 30.00,
+            targetTimerLeft: 0,
+            lastTickTime: 0,
+            timerInterval: null,
+            bounceAnimFrame: null,
+            targetWordMeaning: null,
+            targetInkColor: null,
+            insane2Rule: 'meaning', // 'meaning' 或 'color'
+            currentOptions: [],
+            bouncingBallPhysics: [],
+            activeSkin: 'golf',
+            unlockedSkins: ['golf', 'boxing'],
+            isPlaying: false,
+            isPaused: false,
+
+            // Difficulty Engine Settings
+            currentDifficulty: 'easy',
+            unlockedDifficulties: ['easy'],
+            targetTimeoutMax: 0,
+
+            LS_BEST: 'text_color_best',
+            LS_COINS: 'text_color_coins',
+            LS_SKINS: 'text_color_unlocked_skins',
+            LS_ACTIVE_SKIN: 'text_color_active_skin',
+            LS_DIFF: 'text_color_unlocked_diffs',
+
+            init() {
+                this.loadData();
+                this.renderDifficultyCards();
+                this.renderSkinsGrid();
+                this.bindEvents();
+            },
+
+            loadData() {
+                this.coins = parseInt(localStorage.getItem(this.LS_COINS) || '45', 10);
+                const savedSkins = localStorage.getItem(this.LS_SKINS);
+                if (savedSkins) {
+                    try { this.unlockedSkins = JSON.parse(savedSkins); } catch(e) {}
+                }
+                if (!this.unlockedSkins.includes('boxing')) {
+                    this.unlockedSkins.push('boxing');
+                }
+                this.activeSkin = localStorage.getItem(this.LS_ACTIVE_SKIN) || 'golf';
+
+                const savedDiffs = localStorage.getItem(this.LS_DIFF);
+                if (savedDiffs) {
+                    try { this.unlockedDifficulties = JSON.parse(savedDiffs); } catch(e) {}
+                }
+
+                document.getElementById('tc-game-coins-display').textContent = this.coins;
+                document.getElementById('tc-game-best-display').textContent = this.getBestScore();
+            },
+
+            saveData() {
+                localStorage.setItem(this.LS_COINS, this.coins.toString());
+                localStorage.setItem(this.LS_SKINS, JSON.stringify(this.unlockedSkins));
+                localStorage.setItem(this.LS_ACTIVE_SKIN, this.activeSkin);
+                localStorage.setItem(this.LS_DIFF, JSON.stringify(this.unlockedDifficulties));
+                document.getElementById('tc-game-coins-display').textContent = this.coins;
+            },
+
+            getBestScore() {
+                return parseInt(localStorage.getItem(this.LS_BEST + '_' + this.currentDifficulty) || '0', 10);
+            },
+
+            setBestScore(val) {
+                if (val > this.getBestScore()) {
+                    localStorage.setItem(this.LS_BEST + '_' + this.currentDifficulty, val.toString());
+                    document.getElementById('tc-game-best-display').textContent = val;
+                    return true;
+                }
+                return false;
+            },
+
+            renderDifficultyCards() {
+                const hardBtn = document.getElementById('tc-diff-hard');
+                const insaneBtn = document.getElementById('tc-diff-insane');
+                const insane2Btn = document.getElementById('tc-diff-insane2');
+
+                const isHardUnlocked = this.unlockedDifficulties.includes('hard');
+                const isInsaneUnlocked = this.unlockedDifficulties.includes('insane');
+                const isInsane2Unlocked = this.unlockedDifficulties.includes('insane2');
+
+                if (isHardUnlocked) {
+                    hardBtn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
+                    document.getElementById('tc-hard-icon').className = 'w-9 h-9 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center text-lg font-black flex-shrink-0';
+                    document.getElementById('tc-hard-icon').innerHTML = '⚡';
+                    document.getElementById('tc-hard-tag').className = 'text-[9px] bg-lime-100 text-lime-800 px-2 py-0.5 rounded-full font-bold uppercase';
+                    document.getElementById('tc-hard-tag').textContent = 'UNLOCKED';
+                }
+
+                if (isInsaneUnlocked) {
+                    insaneBtn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
+                    document.getElementById('tc-insane-icon').className = 'w-9 h-9 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center text-lg font-black flex-shrink-0';
+                    document.getElementById('tc-insane-icon').innerHTML = '⚡';
+                    document.getElementById('tc-insane-tag').className = 'text-[9px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold uppercase';
+                    document.getElementById('tc-insane-tag').textContent = 'UNLOCKED';
+                }
+
+                if (isInsane2Unlocked) {
+                    insane2Btn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
+                    document.getElementById('tc-insane2-icon').className = 'w-9 h-9 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center text-lg font-black flex-shrink-0';
+                    document.getElementById('tc-insane2-icon').innerHTML = '⚡';
+                    document.getElementById('tc-insane2-tag').className = 'text-[9px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold uppercase';
+                    document.getElementById('tc-insane2-tag').textContent = 'UNLOCKED';
+                }
+            },
+
+            switchSubScreen(screenId) {
+                document.querySelectorAll('.tc-screen').forEach(s => s.classList.remove('active'));
+                const target = document.getElementById(screenId);
+                if (target) target.classList.add('active');
+
+                const topNav = document.getElementById('tc-top-nav-bar');
+                if (topNav) {
+                    if (screenId === 'tc-screen-customize') {
+                        topNav.classList.add('hidden');
+                    } else {
+                        topNav.classList.remove('hidden');
+                    }
+                }
+            },
+
+            start(diff) {
+                if (diff === 'hard' && !this.unlockedDifficulties.includes('hard')) {
+                    globalAudio.playError();
+                    return;
+                }
+                if (diff === 'insane' && !this.unlockedDifficulties.includes('insane')) {
+                    globalAudio.playError();
+                    return;
+                }
+                if (diff === 'insane2' && !this.unlockedDifficulties.includes('insane2')) {
+                    globalAudio.playError();
+                    return;
+                }
+
+                this.currentDifficulty = diff;
+                globalAudio.playPop();
+                this.points = 0;
+                this.timeLeft = 30.00;
+                this.isPlaying = true;
+                this.isPaused = false;
+
+                const badge = document.getElementById('tc-difficulty-badge');
+                badge.textContent = diff.toUpperCase();
+
+                const progressBarWrap = document.getElementById('tc-progress-bar-wrap');
+                if (diff === 'hard' || diff === 'insane' || diff === 'insane2') {
+                    progressBarWrap.classList.remove('opacity-0');
+                } else {
+                    progressBarWrap.classList.add('opacity-0');
+                }
+
+                document.getElementById('tc-game-points').textContent = '0';
+                document.getElementById('tc-game-best-display').textContent = this.getBestScore();
+                document.getElementById('tc-game-timer').textContent = '30.00';
+
+                this.switchSubScreen('tc-screen-game');
+                this.nextQuestion();
+                this.startTimerLoop();
+            },
+
+            startTimerLoop() {
+                clearInterval(this.timerInterval);
+                this.lastTickTime = Date.now();
+
+                this.timerInterval = setInterval(() => {
+                    if (!this.isPlaying || this.isPaused) return;
+
+                    const now = Date.now();
+                    const delta = (now - this.lastTickTime) / 1000;
+                    this.lastTickTime = now;
+
+                    this.timeLeft = Math.max(0, this.timeLeft - delta);
+                    document.getElementById('tc-game-timer').textContent = this.timeLeft.toFixed(2);
+
+                    // Timer countdown bar for Hard, Insane & Insane2
+                    if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                        this.targetTimerLeft -= delta;
+
+                        const pct = Math.max(0, (this.targetTimerLeft / 2.0) * 100);
+                        document.getElementById('tc-progress-bar').style.width = pct + '%';
+
+                        if (this.targetTimerLeft <= 0) {
+                            globalAudio.playError();
+                            this.isPlaying = false;
+                            clearInterval(this.timerInterval);
+                            this.stopBounceLoop();
+                            this.showLostScreen();
+                            return;
+                        }
+                    }
+
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timerInterval);
+                        this.stopBounceLoop();
+                        this.endGame();
+                    }
+                }, 10);
+            },
+
+            pauseTimer() {
+                if (this.isPlaying && !this.isPaused) {
+                    this.isPaused = true;
+                    clearInterval(this.timerInterval);
+                    this.stopBounceLoop();
+                }
+            },
+
+            resumeTimer() {
+                if (this.isPlaying && this.isPaused) {
+                    this.isPaused = false;
+                    this.lastTickTime = Date.now();
+                    this.startTimerLoop();
+                    if (this.currentDifficulty === 'insane') {
+                        this.startBounceLoop();
+                    }
+                }
+            },
+
+            nextQuestion() {
+                let pool = ALL_COLORS;
+                let optionCount = 3;
+                const ruleIndicator = document.getElementById('tc-rule-indicator');
+
+                if (this.currentDifficulty === 'easy') {
+                    pool = ALL_COLORS;
+                    optionCount = 3;
+                    this.targetTimeoutMax = 0;
+                    ruleIndicator.classList.add('hidden');
+                } else if (this.currentDifficulty === 'hard') {
+                    pool = ALL_COLORS.slice(0, 5);
+                    optionCount = 4;
+                    this.targetTimeoutMax = 2.0;
+                    ruleIndicator.classList.add('hidden');
+                } else if (this.currentDifficulty === 'insane') {
+                    // INSANE: Exactly 4 floating bouncing balls, 2s timer
+                    pool = ALL_COLORS;
+                    optionCount = 4;
+                    this.targetTimeoutMax = 2.0;
+                    ruleIndicator.classList.add('hidden');
+                } else if (this.currentDifficulty === 'insane2') {
+                    // INSANE 2: Static balls, 2s timer, Dynamic Rule Switch
+                    pool = ALL_COLORS;
+                    optionCount = 4;
+                    this.targetTimeoutMax = 2.0;
+
+                    // Randomize Rule: 'meaning' or 'color'
+                    this.insane2Rule = Math.random() < 0.5 ? 'meaning' : 'color';
+                    ruleIndicator.classList.remove('hidden');
+
+                    if (this.insane2Rule === 'meaning') {
+                        ruleIndicator.textContent = 'RULE: TAP TEXT MEANING';
+                        ruleIndicator.className = 'text-xs font-extrabold tracking-wider uppercase px-3 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-300 mb-2 shadow-sm animate-pulse';
+                    } else {
+                        ruleIndicator.textContent = 'RULE: TAP FONT COLOR';
+                        ruleIndicator.className = 'text-xs font-extrabold tracking-wider uppercase px-3 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-300 mb-2 shadow-sm animate-pulse';
+                    }
+                }
+
+                this.targetTimerLeft = this.targetTimeoutMax;
+                if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                    document.getElementById('tc-progress-bar').style.width = '100%';
+                }
+
+                // Target Color Meaning (The Word)
+                const textObj = pool[Math.floor(Math.random() * pool.length)];
+                this.targetWordMeaning = textObj;
+
+                // Ink Color Distractor
+                let inkObj;
+                if (this.currentDifficulty === 'insane' || this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane2') {
+                    do {
+                        inkObj = pool[Math.floor(Math.random() * pool.length)];
+                    } while (inkObj.id === textObj.id);
+                } else {
+                    inkObj = pool[Math.floor(Math.random() * pool.length)];
+                }
+                this.targetInkColor = inkObj;
+
+                const wordElem = document.getElementById('tc-target-word');
+                wordElem.textContent = textObj.name;
+                wordElem.style.color = inkObj.hex;
+
+                // Generate Options Array - Ensure both correct answers exist if necessary
+                let options = [];
+                if (this.currentDifficulty === 'insane2') {
+                    options = [textObj, inkObj];
+                } else {
+                    options = [textObj];
+                }
+
+                while (options.length < optionCount) {
+                    const randCandidate = pool[Math.floor(Math.random() * pool.length)];
+                    if (!options.some(o => o.id === randCandidate.id)) {
+                        options.push(randCandidate);
+                    }
+                }
+
+                this.currentOptions = options.sort(() => Math.random() - 0.5);
+                this.renderOptionsUI();
+            },
+
+            renderOptionsUI() {
+                const container = document.getElementById('tc-options-container');
+                container.innerHTML = '';
+                this.stopBounceLoop();
+
+                if (!this.currentOptions || this.currentOptions.length === 0) return;
+
+                const currentSkin = TC_SKINS.find(s => s.id === this.activeSkin) || TC_SKINS[0];
+                const isInsane = this.currentDifficulty === 'insane';
+
+                if (isInsane) {
+                    container.className = "w-full relative block pb-4 pt-1 h-[260px] overflow-hidden rounded-2xl";
+                    this.bouncingBallPhysics = [];
+                } else {
+                    container.className = "w-full relative flex flex-wrap justify-center gap-3 items-center pb-6 pt-2 min-h-[140px]";
+                }
+
+                const ballSize = 72;
+                const containerWidth = container.clientWidth || 360;
+                const containerHeight = 250;
+
+                // Dynamic randomized quad bounding zones for Insane 1 physics
+                const quadrants = [
+                    { minX: 15, maxX: Math.max(20, Math.floor(containerWidth / 2) - ballSize - 10), minY: 15, maxY: Math.floor(containerHeight / 2) - ballSize - 10 },
+                    { minX: Math.floor(containerWidth / 2) + 10, maxX: Math.max(Math.floor(containerWidth / 2) + 10, containerWidth - ballSize - 15), minY: 15, maxY: Math.floor(containerHeight / 2) - ballSize - 10 },
+                    { minX: 15, maxX: Math.max(20, Math.floor(containerWidth / 2) - ballSize - 10), minY: Math.floor(containerHeight / 2) + 10, maxY: containerHeight - ballSize - 15 },
+                    { minX: Math.floor(containerWidth / 2) + 10, maxX: Math.max(Math.floor(containerWidth / 2) + 10, containerWidth - ballSize - 15), minY: Math.floor(containerHeight / 2) + 10, maxY: containerHeight - ballSize - 15 }
+                ].sort(() => Math.random() - 0.5);
+
+                this.currentOptions.forEach((opt, idx) => {
+                    const btn = document.createElement('div');
+
+                    if (this.activeSkin === 'boxing') {
+                        btn.className = 'glove-option-item';
+                        btn.style.width = ballSize + 'px';
+                        btn.style.height = ballSize + 'px';
+                        btn.innerHTML = `
+                            <svg width="68" height="68" viewBox="0 0 100 100" class="filter drop-shadow-xl hover:scale-105 transition-transform pointer-events-none">
+                                <path d="M25 45 C15 30, 25 10, 50 10 C75 10, 85 30, 80 50 C75 70, 65 80, 50 80 C35 80, 25 65, 25 45 Z" fill="${opt.hex}" stroke="#1e293b" stroke-width="3"/>
+                                <path d="M18 40 C10 42, 8 58, 20 62 C30 65, 35 55, 30 45 Z" fill="${opt.hex}" filter="brightness(0.85)" stroke="#1e293b" stroke-width="2"/>
+                                <rect x="30" y="72" width="40" height="18" rx="4" fill="#1e293b" stroke="#0f172a" stroke-width="2"/>
+                                <text x="50" y="84" font-size="8" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="Arial">TekXYZ</text>
+                                <path d="M40 18 Q 55 12 68 22" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.4"/>
+                            </svg>
+                        `;
+                    } else {
+                        btn.className = 'ball-item golf-texture';
+                        btn.style.width = ballSize + 'px';
+                        btn.style.height = ballSize + 'px';
+                        btn.style.backgroundColor = opt.hex;
+
+                        if (currentSkin.symbol) {
+                            btn.innerHTML = `<span class="text-2xl pointer-events-none">${currentSkin.symbol}</span>`;
+                        } else {
+                            btn.innerHTML = `
+                                <div class="w-8 h-8 rounded-full border border-black/30 flex flex-col items-center justify-center text-[8px] font-black text-black/80 tracking-tighter uppercase leading-none bg-white/10 backdrop-blur-[1px] pointer-events-none">
+                                    <span class="text-[6px] tracking-widest text-black/60">TORAY</span>
+                                    <span class="text-[8px] font-black tracking-tight my-[0.5px]">TekXYZ</span>
+                                    <span class="text-[4px] tracking-tighter text-black/50">MFG & CORP</span>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    btn.dataset.colorId = opt.id;
+
+                    if (isInsane) {
+                        btn.style.position = 'absolute';
+                        const zone = quadrants[idx % quadrants.length];
+                        
+                        // Fully randomized starting coordinate per ball
+                        const startX = Math.floor(zone.minX + Math.random() * (Math.max(1, zone.maxX - zone.minX)));
+                        const startY = Math.floor(zone.minY + Math.random() * (Math.max(1, zone.maxY - zone.minY)));
+
+                        // Randomized trajectory angle and speed per ball per round
+                        const randomAngle = Math.random() * Math.PI * 2;
+                        const randomSpeed = 1.0 + Math.random() * 1.2;
+
+                        this.bouncingBallPhysics.push({
+                            elem: btn,
+                            x: startX,
+                            y: startY,
+                            vx: Math.cos(randomAngle) * randomSpeed,
+                            vy: Math.sin(randomAngle) * randomSpeed,
+                            radius: ballSize / 2
+                        });
+
+                        btn.style.transform = `translate(${startX}px, ${startY}px)`;
+                    }
+
+                    // Direct element pointerdown listener for physics interaction
+                    btn.addEventListener('pointerdown', (e) => {
+                        e.stopPropagation();
+                        this.handleOptionClick(opt.id);
+                    });
+
+                    container.appendChild(btn);
+                });
+
+                if (isInsane) {
+                    this.startBounceLoop();
+                }
+            },
+
+            startBounceLoop() {
+                this.stopBounceLoop();
+                const container = document.getElementById('tc-options-container');
+                const ballDiameter = 72;
+                const minDist = ballDiameter + 8;
+
+                const step = () => {
+                    if (!this.isPlaying || this.isPaused) return;
+
+                    const boundWidth = container.clientWidth || 360;
+                    const boundHeight = 250;
+
+                    // 1. Boundary Motion
+                    this.bouncingBallPhysics.forEach(ball => {
+                        ball.x += ball.vx;
+                        ball.y += ball.vy;
+
+                        if (ball.x <= 4) {
+                            ball.x = 4;
+                            ball.vx = Math.abs(ball.vx);
+                        } else if (ball.x >= boundWidth - ballDiameter - 4) {
+                            ball.x = boundWidth - ballDiameter - 4;
+                            ball.vx = -Math.abs(ball.vx);
+                        }
+
+                        if (ball.y <= 4) {
+                            ball.y = 4;
+                            ball.vy = Math.abs(ball.vy);
+                        } else if (ball.y >= boundHeight - ballDiameter - 4) {
+                            ball.y = boundHeight - ballDiameter - 4;
+                            ball.vy = -Math.abs(ball.vy);
+                        }
+                    });
+
+                    // 2. Dynamic Ball Collision & Elastic Bounce
+                    for (let i = 0; i < this.bouncingBallPhysics.length; i++) {
+                        for (let j = i + 1; j < this.bouncingBallPhysics.length; j++) {
+                            const b1 = this.bouncingBallPhysics[i];
+                            const b2 = this.bouncingBallPhysics[j];
+
+                            const c1x = b1.x + b1.radius;
+                            const c1y = b1.y + b1.radius;
+                            const c2x = b2.x + b2.radius;
+                            const c2y = b2.y + b2.radius;
+
+                            const dx = c2x - c1x;
+                            const dy = c2y - c1y;
+                            const dist = Math.hypot(dx, dy) || 0.001;
+
+                            if (dist < minDist) {
+                                const overlap = (minDist - dist) / 2;
+                                const nx = dx / dist;
+                                const ny = dy / dist;
+
+                                b1.x -= nx * overlap;
+                                b1.y -= ny * overlap;
+                                b2.x += nx * overlap;
+                                b2.y += ny * overlap;
+
+                                const kx = b1.vx - b2.vx;
+                                const ky = b1.vy - b2.vy;
+                                const p = 2 * (nx * kx + ny * ky) / 2;
+
+                                b1.vx -= p * nx;
+                                b1.vy -= p * ny;
+                                b2.vx += p * nx;
+                                b2.vy += p * ny;
+                            }
+                        }
+                    }
+
+                    this.bouncingBallPhysics.forEach(ball => {
+                        ball.elem.style.transform = `translate(${ball.x}px, ${ball.y}px)`;
+                    });
+
+                    this.bounceAnimFrame = requestAnimationFrame(step);
+                };
+
+                this.bounceAnimFrame = requestAnimationFrame(step);
+            },
+
+            stopBounceLoop() {
+                if (this.bounceAnimFrame) {
+                    cancelAnimationFrame(this.bounceAnimFrame);
+                    this.bounceAnimFrame = null;
+                }
+            },
+
+            handleOptionClick(selectedId) {
+                if (!this.isPlaying || this.isPaused) return;
+
+                let isCorrect = false;
+
+                if (this.currentDifficulty === 'insane2') {
+                    if (this.insane2Rule === 'meaning') {
+                        isCorrect = (selectedId === this.targetWordMeaning.id);
+                    } else if (this.insane2Rule === 'color') {
+                        isCorrect = (selectedId === this.targetInkColor.id);
+                    }
+                } else {
+                    isCorrect = (selectedId === this.targetWordMeaning.id);
+                }
+
+                if (isCorrect) {
+                    globalAudio.playPop();
+                    this.points += 1;
+                    this.coins += 1;
+                    this.saveData();
+
+                    document.getElementById('tc-game-points').textContent = this.points;
+                    this.nextQuestion();
+                } else {
+                    globalAudio.playError();
+                    this.isPlaying = false;
+                    clearInterval(this.timerInterval);
+                    this.stopBounceLoop();
+                    this.showLostScreen();
+                }
+            },
+
+            showLostScreen() {
+                this.setBestScore(this.points);
+                document.getElementById('tc-lost-points').textContent = this.points;
+                document.getElementById('tc-lost-best-score').textContent = this.getBestScore();
+                this.switchSubScreen('tc-screen-lost');
+            },
+
+            endGame() {
+                this.isPlaying = false;
+                this.stopBounceLoop();
+                const isNewBest = this.setBestScore(this.points);
+
+                let newlyUnlocked = false;
+                if (this.currentDifficulty === 'easy' && !this.unlockedDifficulties.includes('hard')) {
+                    this.unlockedDifficulties.push('hard');
+                    newlyUnlocked = true;
+                } else if (this.currentDifficulty === 'hard') {
+                    if (!this.unlockedDifficulties.includes('insane')) {
+                        this.unlockedDifficulties.push('insane');
+                        newlyUnlocked = true;
+                    }
+                    if (!this.unlockedDifficulties.includes('insane2')) {
+                        this.unlockedDifficulties.push('insane2');
+                        newlyUnlocked = true;
+                    }
+                }
+                this.saveData();
+                this.renderDifficultyCards();
+
+                document.getElementById('tc-result-final-score').textContent = this.points;
+                document.getElementById('tc-result-best-score').textContent = this.getBestScore();
+
+                const unlockNotify = document.getElementById('tc-unlock-notify');
+                if (newlyUnlocked) {
+                    unlockNotify.classList.remove('hidden');
+                } else {
+                    unlockNotify.classList.add('hidden');
+                }
+
+                const recordTag = document.getElementById('tc-record-tag');
+                if (isNewBest && this.points > 0) {
+                    recordTag.classList.remove('hidden');
+                    globalAudio.playFanfare();
+                    if (window.confetti) {
+                        confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+                    }
+                } else {
+                    recordTag.classList.add('hidden');
+                }
+
+                this.switchSubScreen('tc-screen-result');
+            },
+
+            renderSkinsGrid() {
+                const grid = document.getElementById('tc-skins-grid');
+                grid.innerHTML = '';
+
+                TC_SKINS.forEach(skin => {
+                    const isUnlocked = skin.unlocked || this.unlockedSkins.includes(skin.id);
+                    const isSelected = this.activeSkin === skin.id;
+
+                    const card = document.createElement('div');
+                    card.id = `tc-skin-card-${skin.id}`;
+                    card.className = `tc-skin-card p-4 bg-white flex flex-col items-center justify-between h-36 relative cursor-pointer ${isSelected ? 'selected' : ''} ${!isUnlocked ? 'locked' : ''}`;
+
+                    let contentHtml = '';
+                    if (skin.id === 'golf') {
+                        contentHtml = `
+                            <div class="w-14 h-14 rounded-full bg-lime-300 golf-texture shadow-inner border border-black/20 my-auto flex flex-col items-center justify-center text-[8px] font-black text-black/80 tracking-tighter leading-none">
+                                <span>TORAY</span>
+                                <span class="text-[10px] font-black tracking-tight my-[1px]">TekXYZ</span>
+                                <span>MFG</span>
+                            </div>
+                        `;
+                    } else if (skin.id === 'boxing') {
+                        contentHtml = `
+                            <div class="text-4xl my-auto">🥊</div>
+                        `;
+                    } else {
+                        contentHtml = `
+                            <div class="text-4xl my-auto ${!isUnlocked ? 'opacity-40 grayscale' : ''}">${skin.symbol}</div>
+                        `;
+                    }
+
+                    let overlayHtml = '';
+                    if (!isUnlocked) {
+                        overlayHtml = `
+                            <div class="absolute inset-0 bg-black/5 flex flex-col justify-between p-3 pointer-events-none">
+                                <div class="flex justify-between items-center w-full">
+                                    <div class="w-6 h-6 rounded-full bg-gray-800 text-white flex items-center justify-center text-xs shadow">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </div>
+                                    <div class="bg-black/75 text-white font-extrabold text-[11px] px-2 py-0.5 rounded-full flex items-center space-x-1 shadow">
+                                        <span>${skin.price}</span>
+                                        <span class="text-amber-400">🪙</span>
+                                    </div>
+                                </div>
+                                <div class="w-full text-center text-xs font-black text-gray-500 tracking-wider uppercase">
+                                    LOCKED
+                                </div>
+                            </div>
+                        `;
+                    } else if (isSelected) {
+                        overlayHtml = `
+                            <div class="absolute top-2 right-2 text-lime-600 text-base">
+                                <i class="fa-solid fa-circle-check"></i>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `${contentHtml} ${overlayHtml}`;
+                    card.addEventListener('click', () => this.handleSkinClick(skin, card));
+                    grid.appendChild(card);
+                });
+            },
+
+            handleSkinClick(skin, cardElem) {
+                const isUnlocked = this.unlockedSkins.includes(skin.id);
+
+                if (isUnlocked) {
+                    this.activeSkin = skin.id;
+                    this.saveData();
+                    this.renderSkinsGrid();
+                    globalAudio.playPop();
+                } else {
+                    if (this.coins >= skin.price) {
+                        this.coins -= skin.price;
+                        this.unlockedSkins.push(skin.id);
+                        this.activeSkin = skin.id;
+                        this.saveData();
+                        this.renderSkinsGrid();
+                        globalAudio.playFanfare();
+                    } else {
+                        globalAudio.playError();
+                        cardElem.classList.remove('shake-item');
+                        void cardElem.offsetWidth;
+                        cardElem.classList.add('shake-item');
+                    }
+                }
+            },
+
+            bindEvents() {
+                document.getElementById('tc-diff-easy').addEventListener('click', () => this.start('easy'));
+                document.getElementById('tc-diff-hard').addEventListener('click', () => this.start('hard'));
+                document.getElementById('tc-diff-insane').addEventListener('click', () => this.start('insane'));
+                document.getElementById('tc-diff-insane2').addEventListener('click', () => this.start('insane2'));
+
+                document.getElementById('tc-btn-customize-game').addEventListener('click', () => {
+                    globalAudio.playPop();
+                    this.pauseTimer();
+                    this.switchSubScreen('tc-screen-customize');
+                });
+
+                document.getElementById('tc-btn-back-customize').addEventListener('click', () => {
+                    globalAudio.playPop();
+                    this.renderOptionsUI();
+                    this.switchSubScreen('tc-screen-game');
+                    this.resumeTimer();
+                });
+
+                document.getElementById('tc-btn-restart').addEventListener('click', () => {
+                    globalAudio.playPop();
+                    this.switchSubScreen('tc-screen-start');
+                });
+                document.getElementById('tc-btn-share').addEventListener('click', () => {
+                    globalAudio.playPop();
+                    const text = `I scored ${this.points} points on ${this.currentDifficulty.toUpperCase()} mode in Text and Color! Try it now!`;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(text);
+                        alert('Score copied to clipboard!');
+                    } else {
+                        alert(text);
+                    }
+                });
+
+                document.getElementById('tc-btn-lost-close').addEventListener('click', () => {
+                    globalAudio.playPop();
+                    this.switchSubScreen('tc-screen-start');
+                });
+                document.getElementById('tc-btn-lost-restart').addEventListener('click', () => {
+                    globalAudio.playPop();
+                    this.switchSubScreen('tc-screen-start');
+                });
+            }
+        };
+
+
+        /* GLOBAL APPLICATION BINDINGS */
+        window.addEventListener('DOMContentLoaded', () => {
+            ReactionPunchGame.init();
+            TextColorGame.init();
+
+            document.getElementById('btn-launch-reaction').addEventListener('click', () => {
+                globalAudio.playPop();
+                ReactionPunchGame.clearTimers();
+                ReactionPunchGame.resetLights();
+                ReactionPunchGame.setIdleState();
+                AppNav.switchScreen('screen-reaction-game');
+            });
+
+            document.getElementById('btn-launch-text-color').addEventListener('click', () => {
+                globalAudio.playPop();
+                TextColorGame.switchSubScreen('tc-screen-start');
+                AppNav.switchScreen('screen-text-color-game');
+            });
+
+            document.querySelectorAll('.btn-back-to-main').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    globalAudio.playPop();
+
+                    clearInterval(TextColorGame.timerInterval);
+                    TextColorGame.stopBounceLoop();
+                    TextColorGame.isPlaying = false;
+                    TextColorGame.isPaused = false;
+
+                    ReactionPunchGame.clearTimers();
+                    ReactionPunchGame.resetLights();
+                    ReactionPunchGame.setIdleState();
+
+                    AppNav.switchScreen('screen-main-dashboard');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
