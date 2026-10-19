@@ -449,7 +449,7 @@
                     <button id="actionBtn" class="w-56 py-2.5 rounded-full border-2 border-limeBrand text-limeBrand font-extrabold text-xl tracking-wide shadow-lg hover:bg-limeBrand/10 active:scale-95 transition-all">
                         Start
                     </button>
-                    <!-- 新增：一局结束时显示的分享按钮 -->
+                    <!-- 一局结束时显示的分享按钮 -->
                     <button id="reactionShareBtn" class="hidden w-12 h-12 bg-slate-800 border-2 border-limeBrand text-limeBrand rounded-full flex items-center justify-center text-lg shadow-lg hover:bg-slate-700 active:scale-95 transition-all flex-shrink-0">
                         <i class="fa-solid fa-arrow-up-from-bracket"></i>
                     </button>
@@ -1459,12 +1459,14 @@
 
             startTimerLoop() {
                 clearInterval(this.timerInterval);
-                this.lastTickTime = Date.now();
+                // 使用高精度时间戳作为初始对比基点
+                this.lastTickTime = performance.now();
 
                 this.timerInterval = setInterval(() => {
                     if (!this.isPlaying || this.isPaused) return;
 
-                    const now = Date.now();
+                    const now = performance.now();
+                    // 计算与上一帧之间的真实高精度毫秒差，转化为真实秒数
                     const delta = (now - this.lastTickTime) / 1000;
                     this.lastTickTime = now;
 
@@ -1493,7 +1495,7 @@
                         this.stopBounceLoop();
                         this.endGame();
                     }
-                }, 10);
+                }, 16); // 16ms 匹配刷新率，与实际物理时间毫秒级完美同步
             },
 
             pauseTimer() {
@@ -1507,7 +1509,7 @@
             resumeTimer() {
                 if (this.isPlaying && this.isPaused) {
                     this.isPaused = false;
-                    this.lastTickTime = Date.now();
+                    this.lastTickTime = performance.now();
                     this.startTimerLoop();
                     if (this.currentDifficulty === 'insane') {
                         this.startBounceLoop();
