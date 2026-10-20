@@ -74,17 +74,15 @@
             transform: scale(0.98);
         }
 
-        /* LED Light Styling */
-        .led-off {
-            background: radial-gradient(circle at 30% 30%, #3a0d0d, #150000);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(255, 255, 255, 0.1);
-            border: 2px solid #222;
+        /* LED Vertical Light Columns */
+        .led-dot-off {
+            background: #27272a;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
         }
 
-        .led-on {
+        .led-dot-on {
             background: radial-gradient(circle at 35% 35%, #ff9999, #ff0000, #990000);
-            box-shadow: 0 0 15px #ff0000, 0 0 30px #ff3333, inset 0 -2px 4px rgba(0, 0, 0, 0.4);
-            border: 2px solid #ff6666;
+            box-shadow: 0 0 12px #ff0000, 0 0 22px #ff3333;
         }
 
         /* Race Car Animation Effects */
@@ -97,19 +95,44 @@
             animation: carEngineIdle 0.15s ease-in-out infinite;
         }
 
-        /* 跑车直线向左侧冲出屏幕消失的 Keyframe 动画 */
-        @keyframes carLeftDashOut {
-            0% { transform: translateX(0); opacity: 1; }
-            100% { transform: translateX(-120vw); opacity: 0; }
+        /* 优化：跑车向左爆发冲出屏幕的流畅残影与动态模糊 Keyframe 动画 */
+        @keyframes carLeftDashOutSmooth {
+            0% { 
+                transform: translateX(0) skewX(0deg); 
+                opacity: 1; 
+                filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)) blur(0px);
+            }
+            20% { 
+                transform: translateX(-8vw) skewX(-6deg) scaleX(1.1); 
+                opacity: 0.95; 
+                filter: drop-shadow(15px 0 12px rgba(239, 68, 68, 0.4)) blur(2px);
+            }
+            50% { 
+                transform: translateX(-45vw) skewX(-12deg) scaleX(1.3); 
+                opacity: 0.75; 
+                filter: drop-shadow(30px 0 25px rgba(239, 68, 68, 0.7)) blur(5px);
+            }
+            100% { 
+                transform: translateX(-120vw) skewX(-18deg) scaleX(1.5); 
+                opacity: 0; 
+                filter: drop-shadow(50px 0 40px rgba(239, 68, 68, 0.9)) blur(12px);
+            }
         }
 
         .car-launch {
-            animation: carLeftDashOut 0.45s cubic-bezier(0.1, 0.85, 0.25, 1) forwards !important;
+            animation: carLeftDashOutSmooth 0.48s cubic-bezier(0.15, 0.85, 0.25, 1) forwards !important;
+            will-change: transform, opacity, filter;
+        }
+
+        /* 抢跑停在一半（平移留半屏）动画 */
+        .car-jump-half {
+            transform: translateX(-55%) !important;
+            transition: transform 0.25s ease-out !important;
         }
 
         /* Pulse Error Flash */
         @keyframes errorFlash {
-            0%, 100% { background-color: #0b1329; }
+            0%, 100% { background-color: #000000; }
             50% { background-color: #3b0c0c; }
         }
 
@@ -339,81 +362,92 @@
 
 
         <!-- ========================================================================= -->
-        <!-- 2. REACTION GAME SCREEN (CENTERED CAR & LEFT DRIVE OUT)                   -->
+        <!-- 2. REACTION GAME SCREEN (PURE WHITE BG, NEW LIGHTS, NO RUNWAY)            -->
         <!-- ========================================================================= -->
-        <div id="screen-reaction-game" class="app-screen flex-col h-full justify-between bg-[#0b1329] p-4 relative overflow-hidden transition-colors duration-300">
+        <div id="screen-reaction-game" class="app-screen flex-col h-full justify-between bg-white text-black p-4 relative overflow-hidden transition-colors duration-300">
             
             <!-- TOP BAR -->
             <div class="flex justify-between items-center z-20 pt-2 w-full">
-                <button class="btn-back-to-main flex items-center space-x-1 bg-slate-900/80 hover:bg-slate-800 text-white font-extrabold px-3 py-2 rounded-xl text-xs tracking-wide border border-slate-700/50 active:scale-95 transition-all">
-                    <i class="fa-solid fa-chevron-left text-limeBrand"></i>
-                    <span>Back</span>
+                <button class="btn-back-to-main flex items-center justify-center text-black p-2 hover:opacity-70 active:scale-95 transition-transform">
+                    <i class="fa-solid fa-chevron-left text-2xl font-black"></i>
                 </button>
 
-                <button id="customizeBtn" class="bg-[#a3e635] hover:bg-[#84cc16] active:scale-95 text-black font-extrabold px-4 py-2 rounded-xl text-xs tracking-wide shadow-lg shadow-lime-500/20 transition-all uppercase">
+                <button id="customizeBtn" class="bg-[#a3e635] hover:bg-[#84cc16] active:scale-95 text-black font-extrabold px-6 py-2.5 rounded-2xl text-sm tracking-wide shadow-md transition-all uppercase">
                     CUSTOMIZE
                 </button>
 
-                <div class="flex items-center gap-1.5 text-base font-black text-white bg-slate-900/60 px-3 py-1.5 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
-                    <i class="fa-solid font-900 fa-gamepad text-lg text-slate-200"></i>
-                    <span id="playCount">0</span>
+                <div class="flex items-center gap-2 text-lg font-black text-black px-3 py-1.5">
+                    <i class="fa-solid fa-gamepad text-2xl"></i>
+                    <span id="playCount">45</span>
                 </div>
             </div>
 
             <!-- MAIN INTERACTIVE TOUCH AREA -->
             <div id="touchArea" class="flex-1 flex flex-col items-center justify-between py-2 cursor-pointer z-10 my-auto w-full">
                 
-                <!-- F1 LIGHT BAR -->
-                <div class="w-full flex flex-col items-center relative mt-2">
-                    <div class="bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border-2 border-slate-600/60 rounded-3xl p-3 px-4 shadow-2xl flex justify-between items-center w-full max-w-xs relative z-10 backdrop-blur-md">
-                        <div id="light1" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
-                        <div id="light2" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
-                        <div id="light3" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
-                        <div id="light4" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
-                        <div id="light5" class="w-11 h-11 rounded-full led-off transition-all duration-150"></div>
+                <!-- NEW 5 VERTICAL LIGHT COLUMNS (4 DOTS EACH) -->
+                <div class="w-full flex justify-center items-center gap-2 my-auto pt-2">
+                    <!-- Column 1 -->
+                    <div class="light-column bg-[#1e1e1e] p-2.5 rounded-2xl flex flex-col gap-2.5 shadow-md">
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                    </div>
+                    <!-- Column 2 -->
+                    <div class="light-column bg-[#1e1e1e] p-2.5 rounded-2xl flex flex-col gap-2.5 shadow-md">
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                    </div>
+                    <!-- Column 3 -->
+                    <div class="light-column bg-[#1e1e1e] p-2.5 rounded-2xl flex flex-col gap-2.5 shadow-md">
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                    </div>
+                    <!-- Column 4 -->
+                    <div class="light-column bg-[#1e1e1e] p-2.5 rounded-2xl flex flex-col gap-2.5 shadow-md">
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                    </div>
+                    <!-- Column 5 -->
+                    <div class="light-column bg-[#1e1e1e] p-2.5 rounded-2xl flex flex-col gap-2.5 shadow-md">
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
+                        <div class="light-dot w-9 h-9 rounded-full led-dot-off"></div>
                     </div>
                 </div>
 
-                <!-- FULL WIDTH ROAD TRACK & CENTERED RACE CAR -->
-                <div class="w-full my-auto flex flex-col items-center justify-center relative -mx-4">
-                    <div class="w-full h-36 flex items-center justify-center relative overflow-hidden">
-                        <!-- ROAD TRACK (SPAN FULL WIDTH) -->
-                        <div class="absolute inset-x-0 bottom-2 h-14 bg-slate-950 border-y-2 border-slate-700/80 flex items-center justify-around w-full">
-                            <div class="w-full h-1 border-b-2 border-dashed border-slate-600/60"></div>
-                            <!-- Start Checkered line -->
-                            <div class="absolute left-8 inset-y-0 w-3 bg-[repeating-linear-gradient(0deg,#fff,#fff_6px,#000_6px,#000_12px)] opacity-60"></div>
-                        </div>
-
-                        <!-- CAR WRAPPER (CENTERED ALIGNED) -->
-                        <div id="carWrapper" class="relative z-10 w-full flex items-center justify-center transition-all duration-200">
-                            <div id="carGraphic" class="w-72 sm:w-80 h-28 filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.8)] transition-all">
-                                <!-- Rendered via JS -->
-                            </div>
+                <!-- CENTERED CAR (NO RUNWAY OR CHECKERED LINE) -->
+                <div id="carSection" class="w-full my-auto flex flex-col items-center justify-center relative min-h-[120px]">
+                    <div id="carWrapper" class="relative z-10 w-full flex items-center justify-center transition-all duration-200">
+                        <div id="carGraphic" class="w-64 sm:w-72 h-24 filter drop-shadow-md transition-all">
+                            <!-- Rendered via JS -->
                         </div>
                     </div>
                 </div>
 
-                <!-- ACTION BUTTONS AREA (START / RESTART + SHARE) -->
-                <div class="w-full flex items-center justify-center gap-3 my-1 px-4">
-                    <button id="actionBtn" class="w-56 py-2.5 rounded-full border-2 border-limeBrand text-limeBrand font-extrabold text-xl tracking-wide shadow-lg hover:bg-limeBrand/10 active:scale-95 transition-all">
-                        Start
-                    </button>
-                    <!-- 一局结束时显示的分享按钮 -->
-                    <button id="reactionShareBtn" class="hidden w-12 h-12 bg-slate-800 border-2 border-limeBrand text-limeBrand rounded-full flex items-center justify-center text-lg shadow-lg hover:bg-slate-700 active:scale-95 transition-all flex-shrink-0">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                    </button>
-                </div>
-
-                <!-- MESSAGES & BEST TIME DISPLAY -->
-                <div class="text-center w-full px-4 mb-2 flex flex-col items-center justify-center min-h-[110px]">
-                    <div id="statusMessage" class="text-base font-semibold text-slate-200 leading-snug max-w-xs transition-colors duration-200 flex flex-col items-center justify-center">
+                <!-- DYNAMIC MESSAGES & SCORE DISPLAY (NO START/RESTART BUTTON) -->
+                <div class="text-center w-full px-4 mb-8 flex flex-col items-center justify-center min-h-[120px]">
+                    <div id="statusMessage" class="text-center leading-snug max-w-xs flex flex-col items-center justify-center">
                         <!-- Dynamic prompt injected via JS -->
                     </div>
+
+                    <!-- SHARE BUTTON (SHOWN ONLY AT RESULT PAGE - FIG 3) -->
+                    <button id="reactionShareBtn" class="hidden mt-4 bg-black text-white font-black px-10 py-3.5 rounded-xl text-base tracking-widest shadow-lg hover:bg-zinc-800 active:scale-95 transition-all uppercase">
+                        SHARE
+                    </button>
                 </div>
             </div>
 
             <!-- CUSTOMIZE SHOP MODAL (SUPPORT CARS & TIRES CHOICE) -->
-            <div id="customizeModal" class="fixed inset-0 bg-black/95 z-50 flex flex-col transition-opacity duration-300 opacity-0 pointer-events-none max-w-md mx-auto">
+            <div id="customizeModal" class="fixed inset-0 bg-black/95 text-white z-50 flex flex-col transition-opacity duration-300 opacity-0 pointer-events-none max-w-md mx-auto">
                 <div class="flex items-center justify-center relative p-5 border-b border-slate-800">
                     <button id="closeCustomizeBtn" class="absolute left-5 text-2xl text-white hover:text-lime-400 active:scale-90 transition-transform">
                         <i class="fa-solid fa-chevron-left"></i>
@@ -717,21 +751,6 @@
                 osc.stop(this.ctx.currentTime + 0.1);
             }
 
-            playGoBeep() {
-                this.init();
-                if (!this.ctx) return;
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
-                gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.25);
-            }
-
             playBuzzer() {
                 this.init();
                 if (!this.ctx) return;
@@ -831,7 +850,7 @@
 
 
         /* ========================================================================= */
-        /* 1. REACTION GAME ENGINE (CAR & TIRE CUSTOMIZATION SUPPORT)                */
+        /* 1. REACTION GAME ENGINE (MATCH NEW UI & BEHAVIORS FROM FIG 1 - FIG 4)     */
         /* ========================================================================= */
         const REACTION_STATE = {
             IDLE: 'IDLE',
@@ -839,28 +858,29 @@
             WAITING_OFF: 'WAITING_OFF',
             GO: 'GO',
             FINISHED: 'FINISHED',
-            FAILED: 'FAILED'
+            FAILED: 'FAILED',
+            RESULT_PAGE: 'RESULT_PAGE'
         };
 
         // CAR BODY SKINS
         const CAR_SKINS = [
-            { id: 'green_f1', name: 'Green Monster', price: 0, unlocked: true, primaryColor: '#22c55e', secondaryColor: '#15803d', darkColor: '#16a34a' },
-            { id: 'red_f1', name: 'Ferrari Red', price: 500, unlocked: true, primaryColor: '#ef4444', secondaryColor: '#991b1b', darkColor: '#dc2626' },
+            { id: 'red_f1', name: 'Ferrari Red', price: 0, unlocked: true, primaryColor: '#ef4444', secondaryColor: '#991b1b', darkColor: '#dc2626' },
+            { id: 'green_f1', name: 'Green Monster', price: 500, unlocked: true, primaryColor: '#22c55e', secondaryColor: '#15803d', darkColor: '#16a34a' },
             { id: 'purple_f1', name: 'Cyber Purple', price: 500, unlocked: false, primaryColor: '#a855f7', secondaryColor: '#6b21a8', darkColor: '#9333ea' },
             { id: 'gold_f1', name: 'Golden Legend', price: 500, unlocked: false, primaryColor: '#eab308', secondaryColor: '#854d0e', darkColor: '#ca8a04' }
         ];
 
         // TIRE / WHEEL SKINS
         const TIRE_SKINS = [
-            { id: 'red_ring', name: 'Red Ring Rim', price: 0, unlocked: true, rimColor: '#ef4444', innerColor: '#64748b' },
+            { id: 'purple_ring', name: 'Purple Ring Rim', price: 0, unlocked: true, rimColor: '#4a154b', innerColor: '#2d062e' },
             { id: 'yellow_ring', name: 'Yellow Ring Rim', price: 0, unlocked: true, rimColor: '#facc15', innerColor: '#ca8a04' },
-            { id: 'lime_ring', name: 'Lime Ring Rim', price: 500, unlocked: false, rimColor: '#a3e635', innerColor: '#65a30d' },
-            { id: 'cyan_ring', name: 'Cyber Cyan Rim', price: 500, unlocked: false, rimColor: '#06b6d4', innerColor: '#0891b2' }
+            { id: 'red_ring', name: 'Red Ring Rim', price: 500, unlocked: false, rimColor: '#ef4444', innerColor: '#991b1b' },
+            { id: 'lime_ring', name: 'Lime Ring Rim', price: 500, unlocked: false, rimColor: '#a3e635', innerColor: '#65a30d' }
         ];
 
         const ReactionPunchGame = {
             currentState: REACTION_STATE.IDLE,
-            playCount: 0,
+            playCount: 45,
             bestTime: null,
             lastScore: null,
             startTime: 0,
@@ -868,92 +888,82 @@
             randomOffTimer: null,
 
             currentCarSkin: 'red_f1',
-            currentTireSkin: 'red_ring',
+            currentTireSkin: 'purple_ring',
 
-            lights: [],
+            lightColumns: [],
             touchArea: null,
             statusMessage: null,
             playCountElem: null,
             carWrapper: null,
             carGraphic: null,
+            carSection: null,
             gameContainer: null,
             customizeBtn: null,
             closeCustomizeBtn: null,
             customizeModal: null,
             carSkinGrid: null,
             tireSkinGrid: null,
-            actionBtn: null,
             reactionShareBtn: null,
 
-            // Dynamic F1 SVG Generator based on body and tire colors
+            // Dynamic Flat Style F1 SVG Generator matching images
             generateF1SVG(carSkinId, tireSkinId) {
                 const car = CAR_SKINS.find(c => c.id === carSkinId) || CAR_SKINS[0];
                 const tire = TIRE_SKINS.find(t => t.id === tireSkinId) || TIRE_SKINS[0];
 
                 return `
                     <svg viewBox="0 0 500 180" class="w-full h-full">
-                        <ellipse cx="120" cy="155" rx="35" ry="10" fill="#000" opacity="0.4"/>
-                        <ellipse cx="380" cy="155" rx="35" ry="10" fill="#000" opacity="0.4"/>
-                        
-                        <!-- Wings -->
-                        <path d="M 400 65 L 450 65 L 435 110 L 390 110 Z" fill="${car.secondaryColor}"/>
-                        <path d="M 410 45 L 465 45 L 455 65 L 400 65 Z" fill="${car.primaryColor}"/>
+                        <!-- Rear Wing -->
+                        <rect x="420" y="45" width="40" height="25" rx="4" fill="#e2e8f0"/>
+                        <rect x="420" y="70" width="40" height="15" fill="#ef4444"/>
+                        <path d="M 400 80 L 450 80 L 435 120 L 390 120 Z" fill="#b91c1c"/>
 
-                        <!-- Body Chassis -->
-                        <path d="M 50 120 L 140 125 L 210 90 L 330 85 L 420 110 L 440 135 L 50 135 Z" fill="#1e293b"/>
-                        <path d="M 70 122 L 150 122 Q 220 70 310 80 Q 370 85 410 115 L 60 128 Z" fill="${car.primaryColor}"/>
-                        <path d="M 170 105 Q 230 75 300 82 L 350 108 Z" fill="${car.darkColor}"/>
+                        <!-- Side Pods & Main Body -->
+                        <path d="M 60 125 L 140 125 L 210 95 L 340 90 L 430 120 L 440 140 L 60 140 Z" fill="#a855f7"/>
+                        <path d="M 70 122 L 160 122 Q 220 75 320 88 Q 380 92 420 122 L 60 128 Z" fill="${car.primaryColor}"/>
+                        <rect x="230" y="112" width="90" height="26" fill="#eab308"/>
                         
-                        <!-- Nose -->
-                        <path d="M 40 132 L 110 125 L 120 135 L 30 138 Z" fill="${car.secondaryColor}"/>
-                        <path d="M 30 128 L 80 128 L 70 138 Z" fill="${car.primaryColor}"/>
+                        <!-- White Center Racing Stripe -->
+                        <path d="M 120 120 L 380 115" stroke="#ffffff" stroke-width="10" stroke-linecap="round"/>
 
-                        <!-- Cockpit -->
-                        <path d="M 230 82 Q 260 55 295 82 Z" fill="#0f172a"/>
-                        <circle cx="265" cy="72" r="10" fill="#e2e8f0"/>
+                        <!-- Front Nose Cone -->
+                        <path d="M 40 135 L 120 128 L 130 140 L 30 142 Z" fill="#ef4444"/>
+
+                        <!-- Driver Helmet & Cockpit -->
+                        <path d="M 240 88 Q 270 60 305 88 Z" fill="#64748b"/>
+                        <circle cx="272" cy="78" r="11" fill="#ef4444"/>
 
                         <!-- Front Tire -->
                         <g>
-                            <circle cx="120" cy="130" r="30" fill="#111827" stroke="${tire.rimColor}" stroke-width="4"/>
-                            <circle cx="120" cy="130" r="18" fill="${tire.innerColor}"/>
-                            <circle cx="120" cy="130" r="8" fill="#e2e8f0"/>
+                            <circle cx="130" cy="135" r="32" fill="${tire.rimColor}"/>
+                            <circle cx="130" cy="135" r="16" fill="#ffffff"/>
                         </g>
                         <!-- Rear Tire -->
                         <g>
-                            <circle cx="380" cy="130" r="32" fill="#111827" stroke="${tire.rimColor}" stroke-width="4"/>
-                            <circle cx="380" cy="130" r="19" fill="${tire.innerColor}"/>
-                            <circle cx="380" cy="130" r="8" fill="#e2e8f0"/>
+                            <circle cx="370" cy="135" r="34" fill="${tire.rimColor}"/>
+                            <circle cx="370" cy="135" r="17" fill="#ffffff"/>
                         </g>
                     </svg>
                 `;
             },
 
-            // Generate Tire Icon Preview for Shop Grid
             generateTirePreviewSVG(tire) {
                 return `
                     <svg viewBox="0 0 100 100" class="w-16 h-16">
-                        <circle cx="50" cy="50" r="44" fill="#111827" stroke="${tire.rimColor}" stroke-width="7"/>
-                        <circle cx="50" cy="50" r="28" fill="${tire.innerColor}"/>
-                        <circle cx="50" cy="50" r="12" fill="#ffffff"/>
+                        <circle cx="50" cy="50" r="44" fill="${tire.rimColor}"/>
+                        <circle cx="50" cy="50" r="22" fill="#ffffff"/>
                     </svg>
                 `;
             },
 
             init() {
-                this.lights = [
-                    document.getElementById('light1'),
-                    document.getElementById('light2'),
-                    document.getElementById('light3'),
-                    document.getElementById('light4'),
-                    document.getElementById('light5')
-                ];
+                this.lightColumns = Array.from(document.querySelectorAll('.light-column'));
                 this.touchArea = document.getElementById('touchArea');
                 this.statusMessage = document.getElementById('statusMessage');
                 this.playCountElem = document.getElementById('playCount');
                 this.carWrapper = document.getElementById('carWrapper');
                 this.carGraphic = document.getElementById('carGraphic');
+                this.carSection = document.getElementById('carSection');
                 this.gameContainer = document.getElementById('screen-reaction-game');
-                this.actionBtn = document.getElementById('actionBtn');
                 this.reactionShareBtn = document.getElementById('reactionShareBtn');
 
                 this.customizeBtn = document.getElementById('customizeBtn');
@@ -970,25 +980,28 @@
 
             setIdleState() {
                 this.currentState = REACTION_STATE.IDLE;
-                if (this.actionBtn) {
-                    this.actionBtn.innerText = 'Start';
-                    this.actionBtn.classList.remove('hidden');
-                }
                 if (this.reactionShareBtn) {
                     this.reactionShareBtn.classList.add('hidden');
                 }
 
+                this.carSection.classList.remove('hidden');
+
                 // 复位跑车到画面正中间
-                this.carGraphic.classList.remove('car-idle', 'car-launch');
+                this.carGraphic.classList.remove('car-idle', 'car-launch', 'car-jump-half');
                 this.carGraphic.style.opacity = '1';
                 this.carGraphic.style.transform = 'none';
 
-                const bestVal = this.bestTime ? `${this.bestTime}` : '--';
-                this.statusMessage.innerHTML = `
-                    <div class="text-sm font-extrabold text-slate-300 mb-1">Best Time: <span class="text-limeBrand">${bestVal}</span></div>
-                    <div class="text-base font-semibold text-slate-200">Tap Start to begin, then tap again when the 5 red lights go out!</div>
-                `;
-                this.statusMessage.className = "text-center leading-snug max-w-xs transition-colors duration-200 flex flex-col items-center justify-center";
+                // 根据是否有最佳成绩显示文案 (图1 或 图4)
+                if (this.bestTime) {
+                    this.statusMessage.innerHTML = `
+                        <div class="text-3xl font-black text-red-600 mb-2">Best Time: ${this.bestTime}</div>
+                        <div class="text-base font-bold text-black">Tap to begin, then tap again when the<br/>5red lights go out!</div>
+                    `;
+                } else {
+                    this.statusMessage.innerHTML = `
+                        <div class="text-base font-bold text-black">Tap to begin, then tap again when the<br/>5red lights go out!</div>
+                    `;
+                }
             },
 
             renderCar() {
@@ -1105,8 +1118,10 @@
             },
 
             resetLights() {
-                this.lights.forEach(light => {
-                    light.className = 'w-11 h-11 rounded-full led-off transition-all duration-150';
+                this.lightColumns.forEach(col => {
+                    col.querySelectorAll('.light-dot').forEach(dot => {
+                        dot.className = 'light-dot w-9 h-9 rounded-full led-dot-off';
+                    });
                 });
             },
 
@@ -1117,13 +1132,12 @@
 
                 switch (this.currentState) {
                     case REACTION_STATE.IDLE:
-                        if (e.target.closest('#actionBtn')) {
-                            this.startNewRound();
-                        }
+                        this.startNewRound();
                         break;
 
                     case REACTION_STATE.FINISHED:
                     case REACTION_STATE.FAILED:
+                    case REACTION_STATE.RESULT_PAGE:
                         this.setIdleState();
                         break;
 
@@ -1147,29 +1161,31 @@
                 this.gameContainer.classList.remove('bg-error');
 
                 this.currentState = REACTION_STATE.COUNTDOWN;
+                this.carSection.classList.remove('hidden');
                 
                 // 还原并在画面正中间抖动发动机
-                this.carGraphic.classList.remove('car-launch');
+                this.carGraphic.classList.remove('car-launch', 'car-jump-half');
                 this.carGraphic.classList.add('car-idle');
                 this.carGraphic.style.opacity = '1';
                 this.carGraphic.style.transform = 'none';
 
-                if (this.actionBtn) {
-                    this.actionBtn.classList.add('hidden');
-                }
                 if (this.reactionShareBtn) {
                     this.reactionShareBtn.classList.add('hidden');
                 }
-                this.statusMessage.innerText = "Tap when all 5 red lights go out!";
-                this.statusMessage.className = "text-base font-semibold text-amber-400 leading-snug max-w-xs text-center flex flex-col items-center justify-center";
+                this.statusMessage.innerHTML = `
+                    <div class="text-base font-bold text-black">Tap to begin, then tap again when the<br/>5red lights go out!</div>
+                `;
 
-                let lightIndex = 0;
+                let colIndex = 0;
 
                 this.countdownTimer = setInterval(() => {
-                    if (lightIndex < 5) {
-                        this.lights[lightIndex].className = 'w-11 h-11 rounded-full led-on transition-all duration-150';
+                    if (colIndex < 5) {
+                        const col = this.lightColumns[colIndex];
+                        col.querySelectorAll('.light-dot').forEach(dot => {
+                            dot.className = 'light-dot w-9 h-9 rounded-full led-dot-on';
+                        });
                         globalAudio.playLightBeep();
-                        lightIndex++;
+                        colIndex++;
                     } else {
                         clearInterval(this.countdownTimer);
                         this.currentState = REACTION_STATE.WAITING_OFF;
@@ -1184,41 +1200,46 @@
 
             extinguishLightsAndStartTimer() {
                 this.resetLights();
-                globalAudio.playGoBeep();
+                // 灯灭只靠眼睛看，不再播放发车提示音！
                 this.startTime = performance.now();
                 this.currentState = REACTION_STATE.GO;
 
-                this.statusMessage.innerText = "GO GO GO!";
-                this.statusMessage.className = "text-2xl font-black text-lime-400 tracking-wider animate-bounce text-center flex flex-col items-center justify-center";
+                this.statusMessage.innerHTML = `
+                    <div class="text-base font-bold text-black">Tap to begin, then tap again when the<br/>5red lights go out!</div>
+                `;
             },
 
+            // 抢跑表现（参考图 2）
             triggerJumpStart() {
                 this.clearTimers();
                 this.resetLights();
                 globalAudio.playBuzzer();
                 this.currentState = REACTION_STATE.FAILED;
                 this.lastScore = null;
-                this.carGraphic.classList.remove('car-idle', 'car-launch');
 
-                if (this.actionBtn) {
-                    this.actionBtn.innerText = 'RESTART';
-                    this.actionBtn.classList.remove('hidden');
-                }
+                this.carGraphic.classList.remove('car-idle', 'car-launch');
+                // 越过线，留一半车在画面中
+                this.carGraphic.classList.add('car-jump-half');
+
                 if (this.reactionShareBtn) {
-                    this.reactionShareBtn.classList.remove('hidden');
+                    this.reactionShareBtn.classList.add('hidden');
                 }
 
                 this.gameContainer.classList.add('bg-error');
                 setTimeout(() => this.gameContainer.classList.remove('bg-error'), 800);
 
-                this.statusMessage.innerHTML = `<div class="text-base font-bold text-red-500">Jump Start False Start! Tap RESTART to try again</div>`;
-                this.statusMessage.className = "text-center leading-snug max-w-xs flex flex-col items-center justify-center";
+                // 展示图 2 样式提示
+                this.statusMessage.innerHTML = `
+                    <div class="text-3xl font-black text-red-600 mb-2">Failed, Jump Start!</div>
+                    <div class="text-base font-bold text-black">Tap again to reload</div>
+                `;
             },
 
+            // 跑出成绩表现（参考图 3）
             triggerDriveSuccess() {
                 const endTime = performance.now();
                 const reactionTimeSec = ((endTime - this.startTime) / 1000).toFixed(3);
-                this.currentState = REACTION_STATE.FINISHED;
+                this.currentState = REACTION_STATE.RESULT_PAGE;
                 this.lastScore = reactionTimeSec;
 
                 globalAudio.playEngineRev();
@@ -1227,24 +1248,23 @@
                     this.bestTime = reactionTimeSec;
                 }
 
-                if (this.actionBtn) {
-                    this.actionBtn.innerText = 'RESTART';
-                    this.actionBtn.classList.remove('hidden');
-                }
+                // 跑车向前带动态流线模糊残影向左冲出屏幕消失
+                this.carGraphic.classList.remove('car-idle');
+                this.carGraphic.classList.add('car-launch');
+                setTimeout(() => {
+                    this.carSection.classList.add('hidden');
+                }, 400);
+
                 if (this.reactionShareBtn) {
                     this.reactionShareBtn.classList.remove('hidden');
                 }
 
-                // 跑车从正中间高速向左冲出屏幕并消失
-                this.carGraphic.classList.remove('car-idle');
-                this.carGraphic.classList.add('car-launch');
-
+                // 成绩居中展示，最佳成绩红字展示，底部显示 SHARE 按钮
                 this.statusMessage.innerHTML = `
-                    <div class="text-4xl sm:text-5xl font-black text-limeBrand tracking-tight drop-shadow-md my-1">${reactionTimeSec}</div>
-                    <div class="text-xs font-bold text-slate-400">Best Time: <span class="text-slate-200">${this.bestTime}</span></div>
-                    <span class="text-xs font-normal text-slate-300 mt-2">Tap RESTART to race again</span>
+                    <div class="text-6xl sm:text-7xl font-black text-black tracking-tight mb-2">${reactionTimeSec}</div>
+                    <div class="text-2xl font-extrabold text-red-600 mb-2">Best : ${this.bestTime}</div>
+                    <div class="text-sm font-bold text-black">Tap again to reload game</div>
                 `;
-                this.statusMessage.className = "text-center leading-snug max-w-xs flex flex-col items-center justify-center";
             },
 
             clearTimers() {
@@ -1254,13 +1274,6 @@
 
             setupEventListeners() {
                 this.touchArea.addEventListener('pointerdown', (e) => this.handleScreenTap(e));
-
-                if (this.actionBtn) {
-                    this.actionBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        this.handleScreenTap(e);
-                    });
-                }
 
                 if (this.reactionShareBtn) {
                     this.reactionShareBtn.addEventListener('click', (e) => {
