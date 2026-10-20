@@ -97,15 +97,14 @@
             animation: carEngineIdle 0.15s ease-in-out infinite;
         }
 
-        /* 跑车加速并彻底冲出屏幕右侧的 Keyframe 动画 */
-        @keyframes carLaunchOut {
-            0% { transform: translateX(0) scale(1); opacity: 1; }
-            15% { transform: translateX(-20px) scale(0.97); opacity: 1; }
-            100% { transform: translateX(120vw) scale(1.15); opacity: 0; }
+        /* 跑车直线向左侧冲出屏幕消失的 Keyframe 动画 */
+        @keyframes carLeftDashOut {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-120vw); opacity: 0; }
         }
 
         .car-launch {
-            animation: carLaunchOut 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+            animation: carLeftDashOut 0.45s cubic-bezier(0.1, 0.85, 0.25, 1) forwards !important;
         }
 
         /* Pulse Error Flash */
@@ -340,7 +339,7 @@
 
 
         <!-- ========================================================================= -->
-        <!-- 2. REACTION GAME SCREEN (CENTERED CAR & FULL SCREEN DRIVE OUT)            -->
+        <!-- 2. REACTION GAME SCREEN (CENTERED CAR & LEFT DRIVE OUT)                   -->
         <!-- ========================================================================= -->
         <div id="screen-reaction-game" class="app-screen flex-col h-full justify-between bg-[#0b1329] p-4 relative overflow-hidden transition-colors duration-300">
             
@@ -822,7 +821,7 @@
 
 
         /* ========================================================================= */
-        /* 1. REACTION GAME ENGINE (CENTERED CAR & DRIVE OUT ANIMATION)              */
+        /* 1. REACTION GAME ENGINE (CENTERED CAR & LEFT DRIVE OUT)                   */
         /* ========================================================================= */
         const REACTION_STATE = {
             IDLE: 'IDLE',
@@ -1178,7 +1177,7 @@
                     this.reactionShareBtn.classList.remove('hidden');
                 }
 
-                // 跑车从正中间高速加速向右冲出屏幕并消失
+                // 跑车从正中间高速向左冲出屏幕并消失
                 this.carGraphic.classList.remove('car-idle');
                 this.carGraphic.classList.add('car-launch');
 
