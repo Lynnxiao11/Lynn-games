@@ -613,15 +613,15 @@
 
                     <!-- TARGET WORD AREA WITH COUNTDOWN PROGRESS BAR -->
                     <div id="tc-target-container" class="my-auto py-2 transition-all flex flex-col items-center w-full">
-                        <!-- Dynamic Rule Indicator Pill (重写：符合参考图 COLOR vs MEANING 结构) -->
-                        <div id="tc-rule-indicator" class="hidden px-5 py-2 rounded-full bg-purple-50 border border-purple-200 mb-2 shadow-sm flex flex-col items-center justify-center">
-                            <span class="text-[9px] font-black tracking-wider text-purple-700 uppercase leading-none mb-1">RULE: TAP TEXT</span>
+                        <!-- Dynamic Rule Indicator Pill (重写：支持动透明度与不同背景主题色区分) -->
+                        <div id="tc-rule-indicator" class="hidden px-5 py-2 rounded-full border mb-2 shadow-sm flex flex-col items-center justify-center transition-colors duration-200">
+                            <span id="tc-rule-header-text" class="text-[9px] font-black tracking-wider uppercase leading-none mb-1">RULE: TAP TEXT</span>
                             <div class="flex items-center gap-2 text-sm font-black uppercase">
                                 <span id="tc-rule-color-item" class="flex items-center gap-1 transition-all">
                                     <span id="tc-rule-color-icon" class="hidden text-base">🎨</span>
                                     <span>COLOR</span>
                                 </span>
-                                <span class="text-xs text-purple-400 font-bold lowercase">vs</span>
+                                <span class="text-xs opacity-40 font-bold lowercase">vs</span>
                                 <span id="tc-rule-meaning-item" class="flex items-center gap-1 transition-all">
                                     <span id="tc-rule-meaning-icon" class="hidden text-base">📝</span>
                                     <span>MEANING</span>
@@ -1424,7 +1424,7 @@
 
 
         /* ========================================================================= */
-        /* 2. TEXT AND COLOR GAME ENGINE (MATCH NEW RULE PILL UI WITH ICONS)          */
+        /* 2. TEXT AND COLOR GAME ENGINE                                             */
         /* ========================================================================= */
         const ALL_COLORS = [
             { id: 'red', name: 'red', hex: '#ef4444' },
@@ -1720,20 +1720,24 @@
                     this.insaneRule = Math.random() < 0.5 ? 'meaning' : 'color';
                     ruleIndicator.classList.remove('hidden');
 
-                    // 修改：遵循参考图样式 - 激活的加粗且显示相应图标，未激活的变灰/半透明
+                    // 修改处：遵循参考图 - 区分 COLOR 与 MEANING 的不同配色与透明度
                     if (this.insaneRule === 'color') {
-                        // 激活 COLOR 规则 (显示调色盘 🎨)
-                        colorItem.className = 'flex items-center gap-1 text-purple-700 font-black scale-105';
+                        // COLOR 规则激活：粉紫色背景主题
+                        ruleIndicator.className = 'px-5 py-1.5 rounded-full bg-pink-100 border border-pink-200 mb-2 shadow-sm flex flex-col items-center justify-center transition-colors duration-200';
+                        
+                        colorItem.className = 'flex items-center gap-1 text-pink-700 font-black scale-105';
                         colorIcon.classList.remove('hidden');
 
-                        meaningItem.className = 'flex items-center gap-1 text-purple-300 font-bold opacity-60';
+                        meaningItem.className = 'flex items-center gap-1 text-purple-400 font-extrabold opacity-40';
                         meaningIcon.classList.add('hidden');
                     } else {
-                        // 激活 MEANING 规则 (显示文稿/文字 📝)
-                        meaningItem.className = 'flex items-center gap-1 text-purple-700 font-black scale-105';
+                        // MEANING 规则激活：深蓝色背景主题
+                        ruleIndicator.className = 'px-5 py-1.5 rounded-full bg-blue-100 border border-blue-200 mb-2 shadow-sm flex flex-col items-center justify-center transition-colors duration-200';
+                        
+                        meaningItem.className = 'flex items-center gap-1 text-blue-800 font-black scale-105';
                         meaningIcon.classList.remove('hidden');
 
-                        colorItem.className = 'flex items-center gap-1 text-purple-300 font-bold opacity-60';
+                        colorItem.className = 'flex items-center gap-1 text-blue-400 font-extrabold opacity-40';
                         colorIcon.classList.add('hidden');
                     }
                 }
