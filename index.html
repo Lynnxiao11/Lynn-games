@@ -313,7 +313,6 @@
                             <span class="font-extrabold italic text-sm tracking-wider">VIDEO MODE</span>
                         </div>
                         <div class="card-green-glow rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 h-28 relative group cursor-pointer">
-                            <i class="fa-solid fa-circle-question absolute top-2 right-2 text-zinc-600 text-xs"></i>
                             <i class="fa-solid fa-crosshairs text-2xl text-limeBrand"></i>
                             <span class="font-extrabold italic text-sm tracking-wider">TARGET</span>
                         </div>
@@ -506,7 +505,7 @@
 
             <div class="w-full h-full flex flex-col justify-between px-6 pb-6 pt-2 relative">
 
-                <!-- 1. START & DIFFICULTY SELECTION SUB-SCREEN -->
+                <!-- 1. START & DIFFICULTY SELECTION SUB-SCREEN (保留3个模式：Easy, Hard, Insane) -->
                 <section id="tc-screen-start" class="tc-screen active flex-col justify-between items-center h-full my-auto text-center py-4">
                     <div class="w-full flex flex-col items-center justify-center space-y-4">
                         <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-black pt-1">
@@ -514,10 +513,10 @@
                         </h1>
 
                         <!-- DIFFICULTY CHOICE CARDS -->
-                        <div class="w-full space-y-2.5 px-2 pt-1">
+                        <div class="w-full space-y-3 px-2 pt-2">
                             <!-- Easy Card -->
-                            <button id="tc-diff-easy" class="w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm">
-                                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center text-lg font-black flex-shrink-0">
+                            <button id="tc-diff-easy" class="w-full rounded-2xl border-2 border-gray-300 p-3.5 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-500 flex items-center justify-center text-xl font-black flex-shrink-0">
                                     ⚡
                                 </div>
                                 <div class="flex-1">
@@ -527,8 +526,8 @@
                             </button>
 
                             <!-- Hard Card (4 个浮动碰撞球 • 2.0s 计时) -->
-                            <button id="tc-diff-hard" class="w-full rounded-2xl border-2 border-gray-200 p-3 flex items-center space-x-3.5 bg-gray-50 text-left transition-all shadow-sm">
-                                <div id="tc-hard-icon" class="w-9 h-9 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
+                            <button id="tc-diff-hard" class="w-full rounded-2xl border-2 border-gray-200 p-3.5 flex items-center space-x-3.5 bg-gray-50 text-left transition-all shadow-sm">
+                                <div id="tc-hard-icon" class="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
                                     <i class="fa-solid fa-lock"></i>
                                 </div>
                                 <div class="flex-1">
@@ -540,9 +539,9 @@
                                 </div>
                             </button>
 
-                            <!-- Insane Card (静态球 • 规则动态切换) -->
-                            <button id="tc-diff-insane" class="w-full rounded-2xl border-2 border-gray-200 p-3 flex items-center space-x-3.5 bg-gray-50 text-left transition-all shadow-sm">
-                                <div id="tc-insane-icon" class="w-9 h-9 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
+                            <!-- Insane Card (原 Insane 2: 4个浮动碰撞球 • 规则动态切换 COLOR vs MEANING) -->
+                            <button id="tc-diff-insane" class="w-full rounded-2xl border-2 border-gray-200 p-3.5 flex items-center space-x-3.5 bg-gray-50 text-left transition-all shadow-sm">
+                                <div id="tc-insane-icon" class="w-10 h-10 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
                                     <i class="fa-solid fa-lock"></i>
                                 </div>
                                 <div class="flex-1">
@@ -550,27 +549,13 @@
                                         <span class="text-base font-black text-black">Insane</span>
                                         <span id="tc-insane-tag" class="text-[9px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">LOCKED</span>
                                     </div>
-                                    <div class="text-[11px] text-gray-500 font-medium leading-tight">Static balls • Dynamic rule changes.</div>
-                                </div>
-                            </button>
-
-                            <!-- Insane 2 Card (4个浮动碰撞球 • 规则动态切换) -->
-                            <button id="tc-diff-insane2" class="w-full rounded-2xl border-2 border-gray-200 p-3 flex items-center space-x-3.5 bg-gray-50 text-left transition-all shadow-sm">
-                                <div id="tc-insane2-icon" class="w-9 h-9 rounded-xl bg-gray-200 text-gray-500 flex items-center justify-center text-base font-black flex-shrink-0">
-                                    <i class="fa-solid fa-lock"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-base font-black text-black">Insane 2</span>
-                                        <span id="tc-insane2-tag" class="text-[9px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">LOCKED</span>
-                                    </div>
                                     <div class="text-[11px] text-gray-500 font-medium leading-tight">4 bouncing balls • Dynamic rule changes.</div>
                                 </div>
                             </button>
                         </div>
 
                         <!-- How to Play -->
-                        <div class="space-y-1 pt-1">
+                        <div class="space-y-1 pt-2">
                             <h2 class="text-xl font-black tracking-tight text-black">
                                 How to play
                             </h2>
@@ -613,7 +598,7 @@
 
                     <!-- TARGET WORD AREA WITH COUNTDOWN PROGRESS BAR -->
                     <div id="tc-target-container" class="my-auto py-2 transition-all flex flex-col items-center w-full">
-                        <!-- Dynamic Rule Indicator Pill (重写：支持动透明度与不同背景主题色区分) -->
+                        <!-- Dynamic Rule Indicator Pill -->
                         <div id="tc-rule-indicator" class="hidden px-5 py-2 rounded-full border mb-2 shadow-sm flex flex-col items-center justify-center transition-colors duration-200">
                             <span id="tc-rule-header-text" class="text-[9px] font-black tracking-wider uppercase leading-none mb-1">RULE: TAP TEXT</span>
                             <div class="flex items-center gap-2 text-sm font-black uppercase">
@@ -633,7 +618,7 @@
                             red
                         </span>
 
-                        <!-- Countdown Progress Bar for Hard, Insane & Insane 2 Mode -->
+                        <!-- Countdown Progress Bar for Hard & Insane Mode -->
                         <div id="tc-progress-bar-wrap" class="w-48 h-2 bg-gray-200 rounded-full mt-3 overflow-hidden opacity-0 transition-opacity">
                             <div id="tc-progress-bar" class="h-full bg-limeBrand w-full transition-all duration-75 ease-linear"></div>
                         </div>
@@ -1424,7 +1409,7 @@
 
 
         /* ========================================================================= */
-        /* 2. TEXT AND COLOR GAME ENGINE                                             */
+        /* 2. TEXT AND COLOR GAME ENGINE (3 个模式: Easy, Hard, Insane)              */
         /* ========================================================================= */
         const ALL_COLORS = [
             { id: 'red', name: 'red', hex: '#ef4444' },
@@ -1462,6 +1447,7 @@
             isPlaying: false,
             isPaused: false,
 
+            // Difficulty Engine Settings: 3 个难度 ('easy', 'hard', 'insane')
             currentDifficulty: 'easy',
             unlockedDifficulties: ['easy'],
             targetTimeoutMax: 0,
@@ -1535,14 +1521,12 @@
             renderDifficultyCards() {
                 const hardBtn = document.getElementById('tc-diff-hard');
                 const insaneBtn = document.getElementById('tc-diff-insane');
-                const insane2Btn = document.getElementById('tc-diff-insane2');
 
                 const isHardUnlocked = this.unlockedDifficulties.includes('hard');
                 const isInsaneUnlocked = this.unlockedDifficulties.includes('insane');
-                const isInsane2Unlocked = this.unlockedDifficulties.includes('insane2');
 
                 if (isHardUnlocked) {
-                    hardBtn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
+                    hardBtn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3.5 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
                     document.getElementById('tc-hard-icon').className = 'w-9 h-9 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg font-black flex-shrink-0';
                     document.getElementById('tc-hard-icon').innerHTML = '⚡';
                     document.getElementById('tc-hard-tag').className = 'text-[9px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold uppercase';
@@ -1550,19 +1534,11 @@
                 }
 
                 if (isInsaneUnlocked) {
-                    insaneBtn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
-                    document.getElementById('tc-insane-icon').className = 'w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg font-black flex-shrink-0';
+                    insaneBtn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3.5 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
+                    document.getElementById('tc-insane-icon').className = 'w-9 h-9 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg font-black flex-shrink-0';
                     document.getElementById('tc-insane-icon').innerHTML = '⚡';
-                    document.getElementById('tc-insane-tag').className = 'text-[9px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold uppercase';
+                    document.getElementById('tc-insane-tag').className = 'text-[9px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold uppercase';
                     document.getElementById('tc-insane-tag').textContent = 'UNLOCKED';
-                }
-
-                if (isInsane2Unlocked) {
-                    insane2Btn.className = 'w-full rounded-2xl border-2 border-gray-300 p-3 flex items-center space-x-3.5 bg-white text-left hover:border-black active:scale-95 transition-all shadow-sm cursor-pointer';
-                    document.getElementById('tc-insane2-icon').className = 'w-9 h-9 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg font-black flex-shrink-0';
-                    document.getElementById('tc-insane2-icon').innerHTML = '⚡';
-                    document.getElementById('tc-insane2-tag').className = 'text-[9px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-bold uppercase';
-                    document.getElementById('tc-insane2-tag').textContent = 'UNLOCKED';
                 }
             },
 
@@ -1590,12 +1566,8 @@
                     globalAudio.playError();
                     return;
                 }
-                if (diff === 'insane2' && !this.unlockedDifficulties.includes('insane2')) {
-                    globalAudio.playError();
-                    return;
-                }
 
-                if (diff === 'insane' || diff === 'insane2') {
+                if (diff === 'insane') {
                     const dontShow = localStorage.getItem(this.LS_DONT_SHOW_INSANE_GUIDE) === 'true';
                     if (!dontShow) {
                         this.pendingDiffToStart = diff;
@@ -1621,7 +1593,7 @@
                 badge.textContent = diff.toUpperCase();
 
                 const progressBarWrap = document.getElementById('tc-progress-bar-wrap');
-                if (diff === 'hard' || diff === 'insane' || diff === 'insane2') {
+                if (diff === 'hard' || diff === 'insane') {
                     progressBarWrap.classList.remove('opacity-0');
                 } else {
                     progressBarWrap.classList.add('opacity-0');
@@ -1650,7 +1622,7 @@
                     this.timeLeft = Math.max(0, this.timeLeft - delta);
                     document.getElementById('tc-game-timer').textContent = this.timeLeft.toFixed(2);
 
-                    if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                    if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane') {
                         this.targetTimerLeft -= delta;
 
                         const pct = Math.max(0, Math.min(100, (this.targetTimerLeft / 2.0) * 100));
@@ -1687,7 +1659,7 @@
                     this.isPaused = false;
                     this.lastTickTime = performance.now();
                     this.startTimerLoop();
-                    if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane2') {
+                    if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane') {
                         this.startBounceLoop();
                     }
                 }
@@ -1708,11 +1680,13 @@
                     this.targetTimeoutMax = 0;
                     ruleIndicator.classList.add('hidden');
                 } else if (this.currentDifficulty === 'hard') {
+                    // Hard 模式：4个浮动碰撞球 • 2.0s 倒计时
                     pool = ALL_COLORS;
                     optionCount = 4;
                     this.targetTimeoutMax = 2.0;
                     ruleIndicator.classList.add('hidden');
-                } else if (this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                } else if (this.currentDifficulty === 'insane') {
+                    // 现在的 Insane 模式（原 Insane 2 逻辑）：4个浮动碰撞球 • 2.0s 倒计时 • 动态规则切换 COLOR vs MEANING
                     pool = ALL_COLORS;
                     optionCount = 4;
                     this.targetTimeoutMax = 2.0;
@@ -1720,20 +1694,15 @@
                     this.insaneRule = Math.random() < 0.5 ? 'meaning' : 'color';
                     ruleIndicator.classList.remove('hidden');
 
-                    // 修改处：遵循参考图 - 区分 COLOR 与 MEANING 的不同配色与透明度
                     if (this.insaneRule === 'color') {
-                        // COLOR 规则激活：粉紫色背景主题
                         ruleIndicator.className = 'px-5 py-1.5 rounded-full bg-pink-100 border border-pink-200 mb-2 shadow-sm flex flex-col items-center justify-center transition-colors duration-200';
-                        
                         colorItem.className = 'flex items-center gap-1 text-pink-700 font-black scale-105';
                         colorIcon.classList.remove('hidden');
 
                         meaningItem.className = 'flex items-center gap-1 text-purple-400 font-extrabold opacity-40';
                         meaningIcon.classList.add('hidden');
                     } else {
-                        // MEANING 规则激活：深蓝色背景主题
                         ruleIndicator.className = 'px-5 py-1.5 rounded-full bg-blue-100 border border-blue-200 mb-2 shadow-sm flex flex-col items-center justify-center transition-colors duration-200';
-                        
                         meaningItem.className = 'flex items-center gap-1 text-blue-800 font-black scale-105';
                         meaningIcon.classList.remove('hidden');
 
@@ -1743,7 +1712,7 @@
                 }
 
                 this.targetTimerLeft = this.targetTimeoutMax;
-                if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                if (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane') {
                     document.getElementById('tc-progress-bar').style.width = '100%';
                 }
 
@@ -1765,7 +1734,7 @@
                 wordElem.style.color = inkObj.hex;
 
                 let options = [];
-                if (this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                if (this.currentDifficulty === 'insane') {
                     options = [textObj, inkObj];
                 } else {
                     options = [textObj];
@@ -1790,7 +1759,7 @@
                 if (!this.currentOptions || this.currentOptions.length === 0) return;
 
                 const currentSkin = TC_SKINS.find(s => s.id === this.activeSkin) || TC_SKINS[0];
-                const isBouncing = (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane2');
+                const isBouncing = (this.currentDifficulty === 'hard' || this.currentDifficulty === 'insane'); // Hard 与 Insane 均为浮动碰撞球
 
                 if (isBouncing) {
                     container.className = "w-full relative block pb-4 pt-1 h-[260px] overflow-hidden rounded-2xl";
@@ -1973,7 +1942,7 @@
 
                 let isCorrect = false;
 
-                if (this.currentDifficulty === 'insane' || this.currentDifficulty === 'insane2') {
+                if (this.currentDifficulty === 'insane') {
                     if (this.insaneRule === 'meaning') {
                         isCorrect = (selectedId === this.targetWordMeaning.id);
                     } else if (this.insaneRule === 'color') {
@@ -2021,13 +1990,6 @@
                         this.unlockedDifficulties.push('insane');
                         newlyUnlocked = true;
                     }
-                    if (!this.unlockedDifficulties.includes('insane2')) {
-                        this.unlockedDifficulties.push('insane2');
-                        newlyUnlocked = true;
-                    }
-                } else if (this.currentDifficulty === 'insane' && !this.unlockedDifficulties.includes('insane2')) {
-                    this.unlockedDifficulties.push('insane2');
-                    newlyUnlocked = true;
                 }
 
                 this.saveData();
@@ -2149,7 +2111,6 @@
                 document.getElementById('tc-diff-easy').addEventListener('click', () => this.handleStartDifficulty('easy'));
                 document.getElementById('tc-diff-hard').addEventListener('click', () => this.handleStartDifficulty('hard'));
                 document.getElementById('tc-diff-insane').addEventListener('click', () => this.handleStartDifficulty('insane'));
-                document.getElementById('tc-diff-insane2').addEventListener('click', () => this.handleStartDifficulty('insane2'));
 
                 this.closeGuideXBtn.addEventListener('click', () => {
                     globalAudio.playPop();
