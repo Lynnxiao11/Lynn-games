@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TekXYZ - Boxing & Reflex Ball Academy</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brandGreen: {
+              DEFAULT: '#27E073',
+              400: '#00E575',
+              glow: 'rgba(39, 224, 115, 0.35)'
+            },
+            volt: {
+              DEFAULT: '#D4FF00',
+              glow: 'rgba(212, 255, 0, 0.28)'
+            },
+            appDark: {
+              950: '#06080C',
+              900: '#0B0F15',
+              850: '#121722',
+              800: '#1A2130',
+              700: '#263145',
+              600: '#3A4860',
+            }
+          },
+          boxShadow: {
+            'volt-sm': '0 0 16px -2px rgba(212, 255, 0, 0.35)',
+            'volt-lg': '0 0 28px -4px rgba(212, 255, 0, 0.45)',
+            'card': '0 8px 30px rgba(0, 0, 0, 0.45)',
+            'pill': '0 10px 25px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.3)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .screen-view {
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+  </style>
+</head>
+<body class="bg-[#050608] text-slate-100 min-h-screen flex flex-col items-center justify-center font-sans antialiased selection:bg-brandGreen selection:text-black py-4 sm:py-6">
+
+  <!-- Desktop Breadcrumb Switcher -->
+  <div class="mb-3 px-3 py-1.5 rounded-full bg-appDark-900/90 border border-appDark-700/80 backdrop-blur-md flex items-center gap-1.5 text-xs select-none shadow-lg z-50 overflow-x-auto max-w-[95vw]">
+    <span class="text-slate-400 font-semibold px-2 text-[11px] hidden sm:inline uppercase tracking-wider">Flow:</span>
+    <button onclick="navigateToScreen('screen-academy')" id="tab-btn-1" class="px-2.5 py-1 rounded-full font-bold text-xs transition bg-brandGreen text-black shadow-sm shrink-0">
+      1. Academy
+    </button>
+    <i class="ph-bold ph-caret-right text-slate-500 text-xs shrink-0"></i>
+    <button onclick="navigateToScreen('screen-collection')" id="tab-btn-2" class="px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0">
+      2. Skill Collection
+    </button>
+    <i class="ph-bold ph-caret-right text-slate-500 text-xs shrink-0"></i>
+    <button onclick="navigateToScreen('screen-collection-detail')" id="tab-btn-2b" class="px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0">
+      3. Category Videos
+    </button>
+    <i class="ph-bold ph-caret-right text-slate-500 text-xs shrink-0"></i>
+    <button onclick="navigateToScreen('screen-video-detail')" id="tab-btn-2c" class="px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0">
+      4. Video Detail
+    </button>
+    <i class="ph-bold ph-caret-right text-slate-500 text-xs shrink-0"></i>
+    <button onclick="navigateToScreen('screen-upload')" id="tab-btn-3" class="px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0">
+      5. Create Skill
+    </button>
+    <i class="ph-bold ph-caret-right text-slate-500 text-xs shrink-0"></i>
+    <button onclick="navigateToScreen('screen-inbox')" id="tab-btn-4" class="px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0">
+      6. Inbox
+    </button>
+    <i class="ph-bold ph-caret-right text-slate-500 text-xs shrink-0"></i>
+    <button onclick="navigateToScreen('screen-video-approval')" id="tab-btn-5" class="px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0">
+      7. Video Approval
+    </button>
+  </div>
+
+  <!-- Mobile Device Shell Frame -->
+  <div class="relative w-full max-w-[400px] h-[844px] bg-black sm:rounded-[48px] overflow-hidden flex flex-col shadow-2xl border-0 sm:border sm:border-appDark-700/80">
+
+    <!-- Top Status Bar (iOS Look) -->
+    <div class="pt-3.5 px-7 flex justify-between items-center text-xs font-semibold text-slate-300 select-none z-30 shrink-0 bg-transparent">
+      <span class="tracking-tight text-[13px] font-bold">9:41</span>
+      <div class="flex items-center space-x-1.5 text-slate-200">
+        <i class="ph-bold ph-cell-signal-full text-[13px]"></i>
+        <i class="ph-bold ph-wifi-high text-[13px]"></i>
+        <i class="ph-bold ph-battery-full text-sm"></i>
+      </div>
+    </div>
+
+    <!-- MAIN SCREENS CONTAINER -->
+    <div class="relative flex-1 w-full overflow-hidden">
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 1: ACADEMY HOME                                    -->
+      <!-- ========================================================= -->
+      <section id="screen-academy" class="screen-view absolute inset-0 flex flex-col bg-[#07090E] z-10">
+        <!-- Top App Header -->
+        <div class="relative z-30 px-5 pt-2 pb-3 flex items-center justify-between shrink-0 bg-[#07090E] pointer-events-auto">
+          <h1 class="text-2xl font-black text-brandGreen tracking-tight font-display">Academy</h1>
+          <div class="flex items-center gap-2">
+            <!-- Messages button with 44x44px touch target -->
+            <button 
+              type="button" 
+              id="headerInboxBtn"
+              onclick="navigateToScreen('screen-inbox')" 
+              class="relative w-11 h-11 rounded-full flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/10 active:scale-90 transition cursor-pointer z-40 pointer-events-auto"
+              aria-label="Open Inbox"
+            >
+              <i class="ph-bold ph-chat-centered-text text-2xl"></i>
+              <span class="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-black">4</span>
+            </button>
+            <!-- Feedback icon -->
+            <button 
+              type="button"
+              id="headerFeedbackBtn"
+              class="w-11 h-11 rounded-full flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/10 active:scale-90 transition cursor-pointer" 
+              onclick="toast('Feedback & Surveys')"
+              aria-label="Feedback"
+            >
+              <i class="ph-bold ph-note-pencil text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Feed -->
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 space-y-6 pb-24">
+
+          <!-- Section 1: Verified Skill -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-4 bg-brandGreen rounded-full"></span>
+                <h2 class="text-base font-bold text-white tracking-wide">Verified Skill</h2>
+              </div>
+              <button 
+                type="button" 
+                onclick="navigateToScreen('screen-collection')" 
+                class="text-xs font-bold text-brandGreen hover:underline flex items-center gap-0.5 active:scale-95 transition"
+              >
+                <span>See all</span>
+              </button>
+            </div>
+
+            <!-- Horizontal Cards Scroll -->
+            <div class="flex gap-3.5 overflow-x-auto no-scrollbar pb-1">
+              <!-- Card 1: Head Movement -->
+              <div 
+                onclick="openCategoryVideos('screen-academy')" 
+                class="min-w-[172px] w-[172px] h-[225px] rounded-[24px] overflow-hidden relative cursor-pointer group shrink-0 shadow-lg border border-appDark-700/50"
+              >
+                <img src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=500&q=80" alt="Head Movement" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3.5">
+                  <h3 class="text-white font-extrabold italic text-sm tracking-tight leading-tight">Head Movement</h3>
+                  <span class="text-[11px] text-slate-300 font-medium mt-0.5">14 Videos</span>
+                </div>
+              </div>
+
+              <!-- Card 2: Elbows -->
+              <div 
+                onclick="openCategoryVideos('screen-academy')" 
+                class="min-w-[172px] w-[172px] h-[225px] rounded-[24px] overflow-hidden relative cursor-pointer group shrink-0 shadow-lg border border-appDark-700/50"
+              >
+                <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=500&q=80" alt="Elbows" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3.5">
+                  <h3 class="text-white font-extrabold italic text-sm tracking-tight leading-tight">Elbows</h3>
+                  <span class="text-[11px] text-slate-300 font-medium mt-0.5">14 Videos</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Tutorials -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-4 bg-brandGreen rounded-full"></span>
+                <h2 class="text-base font-bold text-white tracking-wide">Tutorials</h2>
+              </div>
+              <button onclick="toast('Opening all tutorials')" class="text-xs font-bold text-brandGreen hover:underline">See all</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Big Tutorial Card (Left) -->
+              <div class="h-[210px] rounded-2xl overflow-hidden relative group cursor-pointer border border-appDark-700/50">
+                <img src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=500&q=80" alt="Beginner's Guide" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-transparent flex items-end justify-between p-3">
+                  <span class="text-xs font-bold text-white leading-tight max-w-[90px]">Beginner's Guide</span>
+                  <div class="w-8 h-8 rounded-full bg-white/25 backdrop-blur-md flex items-center justify-center text-white">
+                    <i class="ph-fill ph-play text-xs ml-0.5"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Two Smaller Tutorial Cards (Right) -->
+              <div class="flex flex-col gap-3">
+                <div class="h-[98px] rounded-2xl overflow-hidden relative group cursor-pointer border border-appDark-700/50">
+                  <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=400&q=80" alt="Guide 1" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent flex items-end p-2.5">
+                    <span class="text-[11px] font-bold text-white">Beginner's Guide</span>
+                  </div>
+                </div>
+
+                <div class="h-[98px] rounded-2xl overflow-hidden relative group cursor-pointer border border-appDark-700/50">
+                  <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=400&q=80" alt="Guide 2" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent flex items-end p-2.5">
+                    <span class="text-[11px] font-bold text-white">Beginner's Guide</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: TekXYZ's FAQ -->
+          <div class="space-y-3 pb-6">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-1.5 h-4 bg-brandGreen rounded-full"></span>
+              <h2 class="text-base font-bold text-white tracking-wide">TekXYZ's FAQ</h2>
+            </div>
+
+            <!-- About APP Subgroup -->
+            <div class="text-xs font-semibold text-slate-400 flex items-center gap-1.5 pt-1">
+              <i class="ph-bold ph-device-mobile"></i>
+              <span>About APP</span>
+            </div>
+
+            <div class="bg-appDark-900/90 rounded-2xl border border-appDark-800/80 divide-y divide-appDark-800/80 overflow-hidden text-xs">
+              <div class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-appDark-850" onclick="toast('FAQ: How do I pair HitBuddy?')">
+                <span class="text-slate-200">How do I pair HitBuddy with the app?</span>
+                <i class="ph-bold ph-caret-down text-slate-400"></i>
+              </div>
+              <div class="p-3.5 flex items-center justify-between cursor-pointer hover:bg-appDark-850" onclick="toast('FAQ: How do I pair HitBuddy?')">
+                <span class="text-slate-200">How do I pair HitBuddy with the app?</span>
+                <i class="ph-bold ph-caret-down text-slate-400"></i>
+              </div>
+            </div>
+
+            <!-- About Device Subgroup -->
+            <div class="text-xs font-semibold text-slate-400 flex items-center gap-1.5 pt-2">
+              <i class="ph-bold ph-headset"></i>
+              <span>About Device</span>
+            </div>
+
+            <div class="bg-appDark-900/90 rounded-2xl border border-appDark-800/80 divide-y divide-appDark-800/80 overflow-hidden text-xs">
+              <div class="p-3.5 bg-appDark-850">
+                <div class="flex items-center justify-between cursor-pointer">
+                  <span class="text-slate-200 font-semibold">How do I pair HitBuddy with the app?</span>
+                  <div class="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center">
+                    <i class="ph-bold ph-caret-up text-xs"></i>
+                  </div>
+                </div>
+                <div class="mt-2.5 pt-2 border-t border-appDark-700/60 space-y-2 text-[11px] text-slate-400">
+                  <div class="flex items-center justify-between cursor-pointer hover:text-white" onclick="toast('Opening Feedback Survey')">
+                    <span>TekXYZ App Feedback Survey</span>
+                    <i class="ph-bold ph-caret-right"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- App Bottom Tab Bar (Only present on Academy screen) -->
+        <nav class="absolute bottom-0 inset-x-0 h-16 bg-[#0B0F15]/95 backdrop-blur-xl border-t border-appDark-800 flex items-center justify-around px-2 z-20">
+          <button class="flex flex-col items-center justify-center text-slate-400 hover:text-white transition" onclick="toast('Home')">
+            <i class="ph-bold ph-house text-xl"></i>
+          </button>
+          <button class="flex flex-col items-center justify-center text-brandGreen transition">
+            <i class="ph-fill ph-stack text-xl"></i>
+          </button>
+          <button class="flex flex-col items-center justify-center text-slate-300" onclick="toast('Play Mode')">
+            <div class="w-8 h-8 rounded-full border-2 border-slate-300 flex items-center justify-center text-[8px] font-black tracking-tight">
+              PLAY
+            </div>
+          </button>
+          <button onclick="toast('Rankings & Leaderboard')" class="flex flex-col items-center justify-center text-slate-400 hover:text-white transition">
+            <i class="ph-bold ph-chart-bar text-xl"></i>
+          </button>
+          <button class="flex flex-col items-center justify-center text-slate-400 hover:text-white transition" onclick="toast('Profile')">
+            <i class="ph-bold ph-user text-xl"></i>
+          </button>
+        </nav>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 2: VERIFIED SKILL COLLECTION LIST                  -->
+      <!-- ========================================================= -->
+      <section id="screen-collection" class="screen-view absolute inset-0 flex flex-col bg-[#07090E] translate-x-full opacity-0 z-20 pointer-events-none">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-appDark-800/80 shrink-0">
+          <button onclick="navigateToScreen('screen-academy')" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-appDark-850 active:scale-95 transition">
+            <i class="ph-bold ph-caret-left text-xl"></i>
+          </button>
+          <h2 class="text-sm font-extrabold text-white tracking-wide">
+            Verified Skill <span class="italic font-medium text-slate-300">Collection</span>
+          </h2>
+          <div class="w-8"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 py-4 space-y-4 pb-28">
+          <div class="flex items-center gap-4 group cursor-pointer" onclick="openCategoryVideos('screen-collection')">
+            <div class="w-24 h-32 rounded-[20px] overflow-hidden bg-gradient-to-br from-emerald-500 to-cyan-500 shrink-0 border border-appDark-700/60 shadow-md">
+              <img src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=300&q=80" alt="Head Movement" class="w-full h-full object-cover group-hover:scale-105 transition" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-white font-extrabold italic text-sm leading-snug group-hover:text-brandGreen transition">
+                Head Movement Training Collection
+              </h3>
+              <span class="text-xs text-slate-400 mt-1 block font-medium">14 Videos</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4 group cursor-pointer" onclick="openCategoryVideos('screen-collection')">
+            <div class="w-24 h-32 rounded-[20px] overflow-hidden bg-gradient-to-br from-teal-500 to-blue-500 shrink-0 border border-appDark-700/60 shadow-md">
+              <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=300&q=80" alt="Elbows" class="w-full h-full object-cover group-hover:scale-105 transition" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-white font-extrabold italic text-base leading-snug group-hover:text-brandGreen transition">
+                Elbows
+              </h3>
+              <span class="text-xs text-slate-400 mt-1 block font-medium">14 Videos</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4 group cursor-pointer" onclick="openCategoryVideos('screen-collection')">
+            <div class="w-24 h-32 rounded-[20px] overflow-hidden bg-gradient-to-br from-cyan-500 to-indigo-500 shrink-0 border border-appDark-700/60 shadow-md">
+              <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=300&q=80" alt="Punches" class="w-full h-full object-cover group-hover:scale-105 transition" />
+            </div>
+            <div class="flex-1">
+              <h3 class="text-white font-extrabold italic text-base leading-snug group-hover:text-brandGreen transition">
+                Punches
+              </h3>
+              <span class="text-xs text-slate-400 mt-1 block font-medium">14 Videos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating + Create New Skill Button -->
+        <div class="absolute bottom-6 inset-x-0 flex justify-center z-30 pointer-events-auto px-6">
+          <button 
+            type="button" 
+            onclick="navigateToScreen('screen-upload')" 
+            class="w-full max-w-[270px] py-3.5 px-6 rounded-full bg-white text-black font-extrabold text-sm tracking-tight flex items-center justify-center gap-2 shadow-pill hover:bg-slate-100 active:scale-95 transition"
+          >
+            <i class="ph-bold ph-plus text-base"></i>
+            <span>Create New Skill</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 2B: CATEGORY VIDEOS LIST                           -->
+      <!-- ========================================================= -->
+      <section id="screen-collection-detail" class="screen-view absolute inset-0 flex flex-col bg-[#07090E] translate-x-full opacity-0 z-20 pointer-events-none">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-appDark-800/80 shrink-0">
+          <button onclick="handleCollectionDetailBack()" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-appDark-850 active:scale-95 transition">
+            <i class="ph-bold ph-caret-left text-xl"></i>
+          </button>
+          <div class="w-8"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 pt-3 pb-28 space-y-4">
+          <div>
+            <h1 class="text-xl font-extrabold italic text-white tracking-tight">
+              Head Movement Training
+            </h1>
+
+            <div class="mt-2 text-xs leading-relaxed text-slate-300">
+              <span id="collabDescShort">
+                Head strikes offer benefits such as greater neck flexibility and more powerful punches.Head strikes offer benefits such as greater neck flexibility and more po...
+              </span>
+              <span id="collabDescFull" class="hidden">
+                Head strikes offer benefits such as greater neck flexibility and more powerful punches.Head strikes offer benefits such as greater neck flexibility and more powerful punches, enhanced spatial awareness, and sharper eye-ball rebound reaction timing for defensive slips and counters.
+              </span>
+              <button 
+                type="button" 
+                id="collabDescMoreBtn" 
+                onclick="toggleCollectionDesc()" 
+                class="text-brandGreen hover:underline font-bold ml-1 inline-block cursor-pointer"
+              >more</button>
+            </div>
+
+            <div class="mt-4 text-xs font-bold text-slate-400">
+              14 Videos
+            </div>
+          </div>
+
+          <!-- Video Item 1: Official TekXYZ (Verified) -->
+          <div class="flex items-center gap-3.5 group cursor-pointer" onclick="openVideoDetail('tekxyz')">
+            <div class="relative w-28 h-36 rounded-2xl overflow-hidden bg-slate-900 shrink-0 border border-appDark-700 shadow-md">
+              <img src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=300&q=80" alt="Straight Punch" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                <div class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-sm">
+                  <i class="ph-fill ph-play text-xs ml-0.5"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 min-w-0 space-y-1.5">
+              <h3 class="text-white font-extrabold italic text-base tracking-tight truncate group-hover:text-brandGreen transition">
+                Straight Punch
+              </h3>
+              <div class="flex items-center gap-1 text-amber-400 text-xs">
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-bold ph-star text-slate-600"></i>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <div class="w-6 h-6 rounded-full overflow-hidden shrink-0 shadow-sm">
+                  <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <defs>
+                      <linearGradient id="tekLogoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#A5F01D"/>
+                        <stop offset="50%" stop-color="#2CE882"/>
+                        <stop offset="100%" stop-color="#14DEC2"/>
+                      </linearGradient>
+                    </defs>
+                    <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                    <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                    <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                    <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                    <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                  </svg>
+                </div>
+                <span class="text-xs font-bold text-white">TekXYZ</span>
+                <i class="ph-fill ph-seal-check text-[#00A3FF] text-xs"></i>
+              </div>
+              <div class="flex items-center gap-2 pt-0.5">
+                <div class="flex -space-x-1.5 overflow-hidden">
+                  <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="" />
+                  <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="" />
+                  <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="" />
+                  <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=100&q=80" alt="" />
+                </div>
+                <span class="text-xs font-semibold text-slate-300 font-mono">12</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Item 2: Gary (Dual-Mode with Image Guide) -->
+          <div class="flex items-center gap-3.5 group cursor-pointer" onclick="openVideoDetail('gary')">
+            <div class="relative w-28 h-36 rounded-2xl overflow-hidden bg-slate-900 shrink-0 border border-appDark-700 shadow-md">
+              <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=300&q=80" alt="Straight Punch" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                <div class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-sm">
+                  <i class="ph-fill ph-play text-xs ml-0.5"></i>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 min-w-0 space-y-1.5">
+              <h3 class="text-white font-extrabold italic text-base tracking-tight truncate group-hover:text-brandGreen transition">
+                Straight Punch
+              </h3>
+              <div class="flex items-center gap-1 text-amber-400 text-xs">
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-fill ph-star"></i>
+                <i class="ph-bold ph-star text-slate-600"></i>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <img class="w-6 h-6 rounded-full object-cover border border-slate-700" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Gary" />
+                <span class="text-xs font-medium text-slate-200">Gary</span>
+              </div>
+              <div class="flex items-center gap-2 pt-0.5">
+                <div class="flex -space-x-1.5 overflow-hidden">
+                  <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="" />
+                  <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="" />
+                </div>
+                <span class="text-xs font-semibold text-slate-300 font-mono">12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 2C: FULLSCREEN SKILL VIDEO DETAIL                  -->
+      <!-- ========================================================= -->
+      <section id="screen-video-detail" class="screen-view absolute inset-0 flex flex-col bg-black translate-x-full opacity-0 z-20 pointer-events-none select-none">
+        
+        <!-- Video / Guide Media Container (Click to Play/Pause) -->
+        <div id="videoDetailMainFrame" class="absolute inset-0 z-0 overflow-hidden cursor-pointer transition-all duration-300 ease-out flex flex-col items-center justify-start origin-top" onclick="togglePlayState()">
+          
+          <!-- Mode A: Video View -->
+          <div id="videoMediaContainer" class="w-full h-full relative transition-all duration-300">
+            <img id="detailVideoBgImg" src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=85" alt="Video Background" class="w-full h-full object-cover transition-all duration-300" />
+            <div id="detailVignette" class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 pointer-events-none transition-opacity duration-300"></div>
+
+            <!-- Double indicator lines for shrunk drawer mode -->
+            <div id="drawerVideoIndicator" class="absolute bottom-2.5 inset-x-0 flex items-center justify-center gap-1.5 opacity-0 transition-opacity duration-300 pointer-events-none">
+              <span class="w-10 h-1 bg-white rounded-full"></span>
+              <span class="w-10 h-1 bg-white/40 rounded-full"></span>
+            </div>
+
+            <!-- Play/Pause State Badge -->
+            <div id="detailPlayPauseBadge" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+              <div class="w-16 h-16 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-md shadow-2xl border border-white/20">
+                <i id="detailPlayPauseIcon" class="ph-fill ph-play text-2xl ml-1"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mode B: Image Guide View (6-Step Graphic Guide) -->
+          <div id="guideMediaContainer" class="hidden w-full h-full overflow-y-auto no-scrollbar bg-[#080B10] p-4 pt-16 pb-36 text-white space-y-3">
+            <div class="flex items-center justify-between pb-1 border-b border-appDark-800">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-[#27E073]"></span>
+                  <span class="text-[11px] font-black tracking-widest text-[#27E073] uppercase font-display">TekXYZ</span>
+                </div>
+                <h2 class="text-base font-black italic tracking-tight text-white mt-0.5">BOXING HEAD BALL USER GUIDE</h2>
+                <p class="text-[10px] text-slate-400">Improve your speed · Reflexes · Coordination</p>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-appDark-800 border border-appDark-700 flex items-center justify-center text-[#27E073]">
+                <i class="ph-bold ph-lightning text-xl"></i>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-[10px]">
+              <div class="bg-appDark-900/90 rounded-xl p-2 border border-appDark-800 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-4 h-4 rounded-full bg-[#27E073] text-black font-black text-[9px] flex items-center justify-center font-mono">1</span>
+                  <span class="font-extrabold uppercase text-[10px]">Wear Headband</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=240&q=80" class="w-full h-16 object-cover rounded-lg" />
+                <p class="text-slate-400 text-[9px] leading-tight">Place the adjustable headband snug above your eyebrows.</p>
+              </div>
+
+              <div class="bg-appDark-900/90 rounded-xl p-2 border border-appDark-800 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-4 h-4 rounded-full bg-[#27E073] text-black font-black text-[9px] flex items-center justify-center font-mono">2</span>
+                  <span class="font-extrabold uppercase text-[10px]">Attach the Ball</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=240&q=80" class="w-full h-16 object-cover rounded-lg" />
+                <p class="text-slate-400 text-[9px] leading-tight">Secure elastic cord to hang at nose level.</p>
+              </div>
+
+              <div class="bg-appDark-900/90 rounded-xl p-2 border border-appDark-800 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-4 h-4 rounded-full bg-[#27E073] text-black font-black text-[9px] flex items-center justify-center font-mono">3</span>
+                  <span class="font-extrabold uppercase text-[10px]">Get into Stance</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=240&q=80" class="w-full h-16 object-cover rounded-lg" />
+                <p class="text-slate-400 text-[9px] leading-tight">Feet shoulder-width apart, knees bent in high guard.</p>
+              </div>
+
+              <div class="bg-appDark-900/90 rounded-xl p-2 border border-appDark-800 space-y-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-4 h-4 rounded-full bg-[#27E073] text-black font-black text-[9px] flex items-center justify-center font-mono">4</span>
+                  <span class="font-extrabold uppercase text-[10px]">Start Punching</span>
+                </div>
+                <img src="https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=240&q=80" class="w-full h-16 object-cover rounded-lg" />
+                <p class="text-slate-400 text-[9px] leading-tight">Hit with alternating straight punches on elastic rebound.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Header Back Button -->
+        <header class="relative z-30 px-5 pt-3 pb-2 flex items-center justify-between pointer-events-auto">
+          <button 
+            type="button" 
+            onclick="navigateToScreen('screen-collection-detail')" 
+            class="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white active:scale-95 transition"
+          >
+            <i class="ph-bold ph-caret-left text-xl"></i>
+          </button>
+        </header>
+
+        <!-- FLOATING METADATA OVERLAY -->
+        <div id="videoMetaOverlay" class="absolute inset-0 z-20 pointer-events-none flex flex-col justify-between p-5 pt-16 transition-opacity duration-200">
+          <div></div>
+
+          <!-- Right Action Bar -->
+          <div class="absolute right-4 bottom-32 flex flex-col items-center space-y-4 pointer-events-auto">
+            <div class="relative cursor-pointer group" onclick="toast('View Creator Profile')">
+              <div id="detailCreatorAvatarWrap" class="w-12 h-12 rounded-full ring-2 ring-white/90 overflow-hidden bg-slate-900 flex items-center justify-center">
+                <img id="detailCreatorAvatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" />
+                <div id="detailCreatorLogoSvg" class="hidden w-full h-full">
+                  <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                    <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                    <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                    <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                    <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                  </svg>
+                </div>
+              </div>
+              <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] leading-none px-0.5 rounded shadow">🇺🇸</span>
+              <div id="detailVerifiedCheck" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#00A3FF] text-white flex items-center justify-center ring-2 ring-black">
+                <i class="ph-fill ph-seal-check text-[10px]"></i>
+              </div>
+            </div>
+
+            <button type="button" onclick="toggleLike(this)" class="flex flex-col items-center text-white active:scale-90 transition">
+              <i class="ph-fill ph-heart text-2xl text-white"></i>
+              <span class="text-[10px] font-semibold mt-0.5">Like</span>
+            </button>
+
+            <button type="button" onclick="toast('Open Comments')" class="flex flex-col items-center text-white active:scale-90 transition">
+              <i class="ph-fill ph-chat-circle text-2xl text-white"></i>
+              <span class="text-[10px] font-semibold mt-0.5">Comment</span>
+            </button>
+
+            <button type="button" onclick="toggleSave(this)" class="flex flex-col items-center text-white active:scale-90 transition">
+              <i class="ph-fill ph-bookmark-simple text-2xl text-white"></i>
+              <span class="text-[10px] font-semibold mt-0.5">Save</span>
+            </button>
+
+            <button type="button" onclick="toast('Share Video Link')" class="flex flex-col items-center text-white active:scale-90 transition">
+              <i class="ph-fill ph-share-fat text-2xl text-white"></i>
+              <span class="text-[10px] font-semibold mt-0.5">Share</span>
+            </button>
+          </div>
+
+          <!-- Bottom-Left Metadata -->
+          <div class="pr-16 pb-20 space-y-2 pointer-events-auto">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00E575] text-black font-extrabold text-[11px] shadow-sm">
+              <i class="ph-fill ph-sketch-logo text-xs"></i>
+              <span>Verified Skill</span>
+            </div>
+
+            <h2 id="detailSkillTitle" class="text-white font-extrabold text-base tracking-tight drop-shadow-md">
+              Skill: Straight Punch
+            </h2>
+
+            <div id="detailCreatorHandle" class="text-xs font-semibold text-white/90">
+              @TekXYZ
+            </div>
+
+            <div class="text-[11px] text-slate-200 leading-snug drop-shadow">
+              <span>Straight Punch Straight Punch Straight...</span>
+              <button 
+                type="button" 
+                onclick="openSkillMoreDrawer()" 
+                class="text-[#27E073] font-bold hover:underline ml-1 cursor-pointer"
+              >more</button>
+            </div>
+
+            <div class="flex items-center gap-2.5 pt-1 text-[11px] text-slate-300">
+              <span class="font-mono text-[10px]">2025-01-04</span>
+              <div class="flex -space-x-1.5 overflow-hidden">
+                <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="" />
+                <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="" />
+                <img class="inline-block h-5 w-5 rounded-full ring-1 ring-black object-cover" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80" alt="" />
+              </div>
+              <span class="font-bold text-xs font-mono">12</span>
+            </div>
+
+            <!-- Action Buttons Row (Image Guide toggle vs Challenge button) -->
+            <div class="flex items-center gap-2 pt-2">
+              <button 
+                type="button" 
+                id="detailToggleGuideBtn" 
+                onclick="toggleMediaMode()" 
+                class="hidden px-4 py-3 rounded-2xl bg-black/60 backdrop-blur-md border border-white/20 text-white font-extrabold text-xs tracking-tight hover:bg-black/80 active:scale-95 transition"
+              >
+                Image Guide
+              </button>
+
+              <button 
+                type="button" 
+                onclick="toast('Starting Straight Punch Challenge!')" 
+                class="flex-1 py-3 px-6 rounded-2xl bg-gradient-to-r from-[#27E073] to-[#00E575] text-black font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition text-center"
+              >
+                Challenge
+              </button>
+
+              <button 
+                type="button" 
+                onclick="toast('More options')" 
+                class="w-11 h-11 rounded-2xl bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-black/80 active:scale-95 transition shrink-0"
+              >
+                <i class="ph-bold ph-dots-three-vertical text-lg"></i>
+              </button>
+            </div>
+
+            <!-- Dual Mode Segmented Indicator Bars (Left: Video, Right: Image Guide) -->
+            <div id="mediaSegmentedIndicators" class="hidden items-center justify-center gap-1.5 pt-2 pb-0.5">
+              <button 
+                type="button" 
+                id="indicatorVideoTab" 
+                onclick="switchMediaTo('video')" 
+                class="w-14 h-1 rounded-full bg-white transition-all cursor-pointer"
+                title="Switch to Video"
+              ></button>
+              <button 
+                type="button" 
+                id="indicatorGuideTab" 
+                onclick="switchMediaTo('guide')" 
+                class="w-14 h-1 rounded-full bg-white/30 hover:bg-white/50 transition-all cursor-pointer"
+                title="Switch to Graphic Guide"
+              ></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Persistent Bottom Input & Clear-Screen Bar -->
+        <footer class="absolute bottom-0 inset-x-0 z-30 px-4 py-3 bg-gradient-to-t from-black via-black/80 to-transparent flex items-center gap-3 shrink-0 pointer-events-auto">
+          <div class="flex-1 flex items-center bg-black/60 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-2.5">
+            <input 
+              type="text" 
+              placeholder="Add a comment" 
+              class="w-full bg-transparent text-xs text-white placeholder-slate-400 outline-none"
+              onkeydown="if(event.key==='Enter'){toast('Comment posted'); this.value='';}"
+            />
+          </div>
+
+          <!-- Clear Screen Toggle Button (清屏功能) -->
+          <button 
+            type="button" 
+            id="clearScreenBtn" 
+            onclick="toggleClearScreen()" 
+            class="w-10 h-10 rounded-2xl bg-black/60 backdrop-blur-md hover:bg-black/80 border border-white/15 flex items-center justify-center text-white transition active:scale-90 shrink-0"
+            title="Toggle Clean Screen"
+          >
+            <i id="clearScreenIcon" class="ph-bold ph-corners-out text-lg text-slate-300"></i>
+          </button>
+        </footer>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SLIDE-UP SHEET: SKILL DETAILS ("more" DRAWER)             -->
+      <!-- ========================================================= -->
+      <div id="skillMoreDrawer" class="fixed inset-0 z-50 bg-black/60 opacity-0 pointer-events-none transition-opacity duration-300 flex items-end">
+        <div class="w-full bg-[#121620] rounded-t-[32px] p-6 max-h-[58%] flex flex-col border-t border-appDark-700/80 transform translate-y-full transition-transform duration-300 text-white shadow-2xl" id="skillMoreDrawerContent">
+          
+          <div class="flex items-center justify-between pb-2">
+            <h2 class="text-base font-extrabold italic tracking-tight text-white">
+              Skill: Straight Punch
+            </h2>
+            <button type="button" onclick="closeSkillMoreDrawer()" class="p-1.5 rounded-full bg-appDark-800 text-slate-400 hover:text-white transition">
+              <i class="ph-bold ph-x text-sm"></i>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3 text-xs pb-3 pt-1">
+            <div class="flex items-center gap-1 text-amber-400">
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-fill ph-star"></i>
+              <i class="ph-bold ph-star text-slate-600"></i>
+              <i class="ph-bold ph-star text-slate-600"></i>
+            </div>
+            <div class="flex items-center gap-1 text-slate-300 font-mono text-[11px]">
+              <i class="ph-fill ph-play text-[10px]"></i>
+              <span>1555</span>
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-300 leading-relaxed space-y-2 py-1">
+            <p id="skillMoreFullText">
+              This series of movements combines fundamental force application logic and smooth posture control, balancing ornamental appeal and practical operability. It is suitable for beginner introductory practice and advanced
+            </p>
+            <button type="button" onclick="closeSkillMoreDrawer()" class="text-[#27E073] font-bold text-xs hover:underline block cursor-pointer">
+              less
+            </button>
+          </div>
+
+          <div class="pt-4 border-t border-appDark-800">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-white">Verified Performers (12)</span>
+              <button type="button" onclick="toast('Showing all 12 verified performers')" class="text-xs font-bold text-[#27E073] hover:underline">
+                See all
+              </button>
+            </div>
+
+            <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
+              <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-amber-400 shrink-0">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" />
+              </div>
+              <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-pink-500 shrink-0">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" />
+              </div>
+              <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-amber-400 shrink-0">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" />
+              </div>
+              <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-amber-400 shrink-0">
+                <img src="https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" />
+              </div>
+              <div class="w-12 h-12 rounded-full overflow-hidden ring-2 ring-amber-400 shrink-0">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-5 mt-auto">
+            <button 
+              type="button" 
+              onclick="toast('Starting challenge mode!'); closeSkillMoreDrawer();" 
+              class="w-full py-4 rounded-2xl bg-gradient-to-r from-[#27E073] to-[#00E575] text-black font-extrabold text-sm uppercase tracking-wider shadow-lg active:scale-95 transition"
+            >
+              Challenge
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 3: CO-CREATION VIDEO UPLOAD                        -->
+      <!-- ========================================================= -->
+      <section id="screen-upload" class="screen-view absolute inset-0 flex flex-col bg-appDark-950 translate-x-full opacity-0 z-30 pointer-events-none">
+        <header class="px-5 py-3.5 flex items-center justify-between border-b border-appDark-800/80 bg-appDark-950/80 backdrop-blur-xl sticky top-0 z-20 shrink-0">
+          <button type="button" onclick="navigateToScreen('screen-collection')" class="w-9 h-9 rounded-full bg-appDark-850 border border-appDark-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-appDark-800 transition active:scale-95">
+            <i class="ph-bold ph-arrow-left text-base"></i>
+          </button>
+
+          <div class="text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <h1 class="text-sm font-extrabold text-white tracking-tight font-display uppercase">Collab Studio</h1>
+              <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-volt/15 text-volt tracking-wider">OFFICIAL</span>
+            </div>
+            <p class="text-[11px] text-slate-400">Co-publish with verified coaches</p>
+          </div>
+
+          <button type="button" onclick="toggleFaqDrawer(true)" class="w-9 h-9 rounded-full bg-appDark-850 border border-appDark-700 flex items-center justify-center text-slate-300 hover:text-white hover:bg-appDark-800 transition active:scale-95" title="Guidelines & FAQ">
+            <i class="ph ph-info text-lg"></i>
+          </button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto no-scrollbar px-5 py-4 space-y-6 pb-36">
+          <section class="bg-gradient-to-b from-appDark-850 to-appDark-900 p-4 rounded-3xl border border-appDark-700/60 shadow-card">
+            <div class="flex items-center justify-between mb-3.5">
+              <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-volt animate-ping"></div>
+                <h2 class="text-[11px] font-extrabold uppercase tracking-widest text-slate-300">How Co-Creation Works</h2>
+              </div>
+              <span class="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                <i class="ph-fill ph-sparkle text-volt"></i> Studio Edited
+              </span>
+            </div>
+
+            <div class="grid grid-cols-4 gap-2">
+              <div class="flex flex-col items-center text-center">
+                <div class="w-9 h-9 rounded-xl bg-appDark-800 border border-appDark-700 flex items-center justify-center text-volt mb-1.5 shadow-sm">
+                  <i class="ph-bold ph-shield-check text-base"></i>
+                </div>
+                <span class="text-[11px] font-bold text-white leading-tight">1. Review</span>
+                <span class="text-[9px] text-slate-400 mt-0.5 leading-tight">Form audit</span>
+              </div>
+
+              <div class="flex flex-col items-center text-center">
+                <div class="w-9 h-9 rounded-xl bg-appDark-800 border border-appDark-700 flex items-center justify-center text-volt mb-1.5 shadow-sm">
+                  <i class="ph-bold ph-film-strip text-base"></i>
+                </div>
+                <span class="text-[11px] font-bold text-white leading-tight">2. Cut & Polish</span>
+                <span class="text-[9px] text-slate-400 mt-0.5 leading-tight">Studio edit</span>
+              </div>
+
+              <div class="flex flex-col items-center text-center">
+                <div class="w-9 h-9 rounded-xl bg-appDark-800 border border-appDark-700 flex items-center justify-center text-volt mb-1.5 shadow-sm">
+                  <i class="ph-bold ph-envelope-simple-open text-base"></i>
+                </div>
+                <span class="text-[11px] font-bold text-white leading-tight">3. Sign-off</span>
+                <span class="text-[9px] text-slate-400 mt-0.5 leading-tight">Email preview</span>
+              </div>
+
+              <div class="flex flex-col items-center text-center">
+                <div class="w-9 h-9 rounded-xl bg-volt/20 border border-volt/60 flex items-center justify-center text-volt mb-1.5 shadow-volt-sm">
+                  <i class="ph-fill ph-users-three text-base"></i>
+                </div>
+                <span class="text-[11px] font-extrabold text-volt leading-tight">4. Release</span>
+                <span class="text-[9px] text-slate-300 mt-0.5 leading-tight">Shared metrics</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- MODULE 2: Video Clips Grid -->
+          <section class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-volt"></span>
+                <span>Movement Footage</span>
+              </label>
+              <div class="flex items-center gap-1.5 font-mono text-[11px]">
+                <span id="clipCounterBadge" class="text-slate-400 font-bold">0/6</span>
+                <span class="text-slate-500">(1–6 clips)</span>
+              </div>
+            </div>
+
+            <div id="videoClipsGrid" class="grid grid-cols-3 gap-2.5">
+              <button 
+                type="button" 
+                id="addClipTriggerBtn" 
+                onclick="openActionSheet()"
+                class="group aspect-[3/4] rounded-2xl border-2 border-dashed border-appDark-700 hover:border-volt/70 bg-appDark-900/60 hover:bg-appDark-900 flex flex-col items-center justify-center p-2.5 transition text-center cursor-pointer active:scale-95 col-span-3 py-6"
+              >
+                <div class="w-12 h-12 rounded-xl bg-appDark-800 border border-appDark-700 group-hover:border-volt/50 flex items-center justify-center text-volt mb-2 group-hover:scale-105 transition">
+                  <i class="ph-bold ph-plus text-xl"></i>
+                </div>
+                <span class="text-xs font-bold text-white group-hover:text-volt transition">Upload Video</span>
+                <span class="text-[10px] text-slate-400 mt-0.5">MP4/MOV · 1–6 clips · 15–90s each</span>
+              </button>
+            </div>
+
+            <div id="clipsReqAlert" class="bg-appDark-900/90 rounded-xl p-2.5 border border-appDark-800 flex items-center gap-2 text-[11px] text-slate-400">
+              <i id="clipsReqIcon" class="ph-bold ph-info text-slate-400 text-sm shrink-0"></i>
+              <span id="clipsReqText">Upload 1 to 6 video clips demonstrating your setup, execution, and key angles.</span>
+            </div>
+          </section>
+
+          <!-- MODULE 3: Title -->
+          <section class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="actionTitle" class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-volt"></span>
+                <span>Movement Title</span>
+              </label>
+              <span id="titleCount" class="font-mono text-[11px] text-slate-500">0/40</span>
+            </div>
+            <div class="relative">
+              <input 
+                type="text" 
+                id="actionTitle" 
+                maxlength="40" 
+                placeholder="e.g., Reflex Ball 1-2 Rhythm Counter & Slip" 
+                oninput="handleTitleInput(this)"
+                class="w-full py-3.5 px-4 pr-10 rounded-2xl bg-appDark-900 border border-appDark-700/80 focus:border-volt text-white placeholder-slate-500 text-xs font-medium outline-none transition"
+              />
+              <button 
+                type="button" 
+                id="clearTitleBtn" 
+                onclick="clearInput('actionTitle')" 
+                class="hidden absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-appDark-750 text-slate-400 hover:text-white flex items-center justify-center transition"
+              >
+                <i class="ph-bold ph-x text-xs"></i>
+              </button>
+            </div>
+          </section>
+
+          <!-- MODULE 4: Cues -->
+          <section class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="actionNotes" class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-volt"></span>
+                <span>Form Cues & Insights</span>
+              </label>
+              <span id="notesCount" class="font-mono text-[11px] text-slate-500">0/500</span>
+            </div>
+            <div class="relative">
+              <textarea 
+                id="actionNotes" 
+                rows="4" 
+                maxlength="500" 
+                placeholder="Focus on soft hands, compact guard position, continuous head movement, and finding the bounce rhythm..." 
+                oninput="handleNotesInput(this)"
+                class="w-full p-4 rounded-2xl bg-appDark-900 border border-appDark-700/80 focus:border-volt text-white placeholder-slate-500 text-xs font-normal leading-relaxed outline-none transition resize-none"
+              ></textarea>
+            </div>
+            <div id="notesMinAlert" class="hidden text-[11px] text-amber-400 flex items-center gap-1.5">
+              <i class="ph-bold ph-warning-circle"></i>
+              <span>Need at least <span id="notesNeededCount">20</span> more characters</span>
+            </div>
+          </section>
+
+          <!-- MODULE 5: Agreement -->
+          <section class="p-3.5 bg-appDark-900/80 rounded-2xl border border-appDark-800 flex items-start gap-3">
+            <input 
+              type="checkbox" 
+              id="authCheckbox" 
+              onchange="toggleSubmitBtnState()" 
+              class="mt-1 w-4 h-4 rounded accent-volt bg-appDark-800 border-appDark-600 cursor-pointer"
+            />
+            <label for="authCheckbox" class="text-xs text-slate-400 leading-snug cursor-pointer select-none">
+              I certify this is my original reflex ball footage and agree to the 
+              <button type="button" onclick="openDrawer('licenseDrawer')" class="text-volt font-bold hover:underline">
+                Co-Creation & Rights Agreement
+              </button>.
+            </label>
+          </section>
+
+          <div class="pt-2">
+            <button 
+              type="button" 
+              id="submitButton" 
+              disabled 
+              onclick="handleFormSubmit()" 
+              class="w-full py-4 rounded-2xl bg-volt text-black font-extrabold text-sm uppercase tracking-wider shadow-volt-lg opacity-40 hover:opacity-100 active:scale-[0.98] transition cursor-pointer"
+            >
+              Submit for Co-Creation
+            </button>
+          </div>
+        </main>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 4: INBOX SCREEN                                    -->
+      <!-- ========================================================= -->
+      <section id="screen-inbox" class="screen-view absolute inset-0 flex flex-col bg-[#07090E] translate-x-full opacity-0 z-30 pointer-events-none">
+        <div class="px-5 pt-2 pb-3 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <button onclick="navigateToScreen('screen-academy')" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-appDark-850 active:scale-95 transition">
+              <i class="ph-bold ph-caret-left text-xl"></i>
+            </button>
+            <h1 class="text-2xl font-black text-brandGreen tracking-tight font-display">Inbox</h1>
+          </div>
+          <div class="flex items-center gap-3 text-slate-200">
+            <button onclick="toast('Direct Messages')" class="hover:text-white transition">
+              <i class="ph-bold ph-envelope-simple text-xl"></i>
+            </button>
+            <button onclick="toast('Notes & Feedback')" class="hover:text-white transition">
+              <i class="ph-bold ph-note-pencil text-xl"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar px-5 space-y-4 pb-20">
+          <!-- Likes and Saves -->
+          <div onclick="toast('Likes and Saves notifications')" class="flex items-center justify-between py-2 cursor-pointer group">
+            <div class="flex items-center gap-3.5">
+              <div class="relative w-12 h-12 rounded-full bg-gradient-to-tr from-[#FF1D6C] to-[#FF4E88] flex items-center justify-center text-white shadow-md">
+                <i class="ph-fill ph-heart text-2xl"></i>
+                <span class="absolute -top-1.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 py-0.2 rounded-full border-2 border-black">99+</span>
+              </div>
+              <span class="text-sm font-semibold text-white group-hover:text-slate-200">Likes and Saves</span>
+            </div>
+            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-white"></i>
+          </div>
+
+          <!-- Comments -->
+          <div onclick="toast('Comments notifications')" class="flex items-center justify-between py-2 cursor-pointer group">
+            <div class="flex items-center gap-3.5">
+              <div class="relative w-12 h-12 rounded-full bg-gradient-to-tr from-[#0088FF] to-[#00B4D8] flex items-center justify-center text-white shadow-md">
+                <i class="ph-fill ph-chat-circle-dots text-2xl"></i>
+                <span class="absolute -top-1.5 -right-1 bg-red-500 text-white text-[8px] font-black px-1 py-0.2 rounded-full border-2 border-black">99+</span>
+              </div>
+              <span class="text-sm font-semibold text-white group-hover:text-slate-200">Comments</span>
+            </div>
+            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-white"></i>
+          </div>
+
+          <!-- Video Approval (Rubber stamp icon) -->
+          <div onclick="navigateToScreen('screen-video-approval')" class="flex items-center justify-between py-2 cursor-pointer group">
+            <div class="flex items-center gap-3.5">
+              <div class="relative w-12 h-12 rounded-full bg-[#DF9D38] flex items-center justify-center text-white shadow-sm shrink-0">
+                <svg class="w-6 h-6 fill-white" viewBox="0 0 24 24">
+                  <circle cx="12" cy="7.5" r="3.2"></circle>
+                  <path d="M10.2 10.2 C10.2 12.8, 8 13.8, 7.2 15 L16.8 15 C16 13.8, 13.8 12.8, 13.8 10.2 Z"></path>
+                  <rect x="6" y="16.2" width="12" height="2.8" rx="1.4"></rect>
+                </svg>
+                <span class="absolute -top-1.5 -right-1 bg-[#FF2D55] text-white text-[8px] font-black px-1.5 py-0.2 rounded-full border-2 border-black leading-tight">99+</span>
+              </div>
+              <span class="text-sm font-medium text-white group-hover:text-slate-200">Video Approval</span>
+            </div>
+            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-white text-base"></i>
+          </div>
+
+          <div class="border-t border-appDark-800/80 my-2"></div>
+
+          <!-- Notifications with TekXYZ Logo -->
+          <div class="space-y-4 text-xs">
+            <div class="flex items-center justify-between cursor-pointer" onclick="openApprovalModal('passed')">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-sm">
+                  <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                    <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                    <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                    <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                    <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-white font-bold text-xs">Report Reviewed</h4>
+                  <p class="text-slate-400 text-[11px] truncate max-w-[200px]">Your report about the video submitted on 此...</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-slate-400">3d</span>
+                <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between cursor-pointer" onclick="toast('Comment details')">
+              <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-full overflow-hidden shrink-0 shadow-sm">
+                  <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                    <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                    <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                    <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                    <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="text-white font-bold text-xs">Comment Removed</h4>
+                  <p class="text-slate-400 text-[11px] truncate max-w-[200px]">Your report about the video submitted on 此...</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] text-slate-400">3d</span>
+                <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-3 pt-2 flex justify-center shrink-0">
+          <div class="w-32 h-1 bg-white/20 rounded-full"></div>
+        </div>
+      </section>
+
+      <!-- ========================================================= -->
+      <!-- SCREEN 5: VIDEO APPROVAL LIST                             -->
+      <!-- ========================================================= -->
+      <section id="screen-video-approval" class="screen-view absolute inset-0 flex flex-col bg-[#07090E] translate-x-full opacity-0 z-40 pointer-events-none">
+        <div class="px-5 py-3.5 flex items-center justify-between border-b border-appDark-800 shrink-0">
+          <button onclick="navigateToScreen('screen-inbox')" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-300 hover:text-white hover:bg-appDark-850 active:scale-95 transition">
+            <i class="ph-bold ph-caret-left text-xl"></i>
+          </button>
+          <h2 class="text-sm font-extrabold text-white tracking-wide">Video Approval</h2>
+          <button onclick="toast('Mailbox')" class="text-slate-300 hover:text-white">
+            <i class="ph-bold ph-envelope-simple text-lg"></i>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 py-3 space-y-4 pb-20">
+          <!-- 1. Approved -->
+          <div onclick="openApprovalModal('passed')" class="flex items-center justify-between cursor-pointer group py-1 gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 shrink-0"></span>
+              <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                  <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                  <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                  <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                  <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                  <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-white font-bold text-xs truncate group-hover:text-brandGreen transition">Video Approved</h4>
+                  <span class="text-[10px] text-slate-400 shrink-0">· 10m</span>
+                </div>
+                <p class="text-slate-400 text-[11px] truncate">Passed form review! Post-production in progress...</p>
+              </div>
+            </div>
+            <div class="w-12 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-appDark-700/60 shadow-sm relative group-hover:border-brandGreen/60 transition">
+              <img src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=200&q=80" alt="Video thumb" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                <i class="ph-fill ph-play text-[10px] text-white"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Failed -->
+          <div onclick="openApprovalModal('failed')" class="flex items-center justify-between cursor-pointer group py-1 gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 shrink-0"></span>
+              <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                  <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                  <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                  <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                  <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                  <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-white font-bold text-xs truncate group-hover:text-red-400 transition">Video Removed</h4>
+                  <span class="text-[10px] text-slate-400 shrink-0">· 2h</span>
+                </div>
+                <p class="text-slate-400 text-[11px] truncate">Video rejected due to movement violation...</p>
+              </div>
+            </div>
+            <div class="w-12 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-appDark-700/60 shadow-sm relative group-hover:border-red-400/60 transition">
+              <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=200&q=80" alt="Video thumb" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                <i class="ph-fill ph-play text-[10px] text-white"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Published -->
+          <div onclick="openApprovalModal('published')" class="flex items-center justify-between cursor-pointer group py-1 gap-2.5">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 shrink-0"></span>
+              <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm">
+                <svg class="w-full h-full" viewBox="0 0 100 100">
+                  <rect width="100" height="100" fill="url(#tekLogoGrad)"/>
+                  <circle cx="50" cy="50" r="39" fill="none" stroke="#000000" stroke-width="6.5"/>
+                  <path d="M 32.5 19.5 L 49.5 19.5 L 37.5 33 L 42.5 33 Z" fill="#000000"/>
+                  <path d="M 60 19 L 76.5 22.5 L 45.5 81 L 28.5 77.5 Z" fill="#000000"/>
+                  <path d="M 59 66.5 L 75 79 L 59 81 Z" fill="#000000"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-white font-bold text-xs truncate group-hover:text-brandGreen transition">Co-Creation Published</h4>
+                  <span class="text-[10px] text-slate-400 shrink-0">· 1d</span>
+                </div>
+                <p class="text-slate-400 text-[11px] truncate">Your co-created reflex ball video is now live...</p>
+              </div>
+            </div>
+            <div class="w-12 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0 border border-appDark-700/60 shadow-sm relative group-hover:border-brandGreen/60 transition">
+              <img src="https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=200&q=80" alt="Video thumb" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                <i class="ph-fill ph-play text-[10px] text-white"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pb-3 pt-2 flex justify-center shrink-0">
+          <div class="w-32 h-1 bg-white/20 rounded-full"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Video Approval Detail Dialog Modal -->
+    <div id="approvalDetailModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center p-5">
+      <div class="w-full max-w-[325px] bg-white text-black rounded-[32px] p-6 text-center shadow-2xl transform scale-95 transition-transform duration-300" id="approvalModalBox">
+        
+        <div id="modalHeaderPassed" class="flex items-center justify-center gap-2 mb-4">
+          <div class="w-6 h-6 rounded-md bg-emerald-500 text-white flex items-center justify-center">
+            <i class="ph-bold ph-check text-sm"></i>
+          </div>
+          <h3 class="text-lg font-black tracking-tight text-slate-900">Video Approved</h3>
+        </div>
+
+        <div id="modalHeaderFailed" class="items-center justify-center gap-2 mb-4 hidden">
+          <span class="text-red-500 text-xl font-black">✕</span>
+          <h3 class="text-xl font-bold tracking-tight text-[#111827]">Video Removed</h3>
+        </div>
+
+        <div id="modalHeaderPublished" class="items-center justify-center gap-2 mb-4 hidden">
+          <div class="w-6 h-6 rounded-md bg-brandGreen text-black flex items-center justify-center">
+            <i class="ph-fill ph-check-fat text-sm"></i>
+          </div>
+          <h3 class="text-lg font-black tracking-tight text-slate-900">Co-Creation Published</h3>
+        </div>
+
+        <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 mb-4 shadow-inner group cursor-pointer" onclick="toast('Playing video preview')">
+          <img id="modalVideoImg" src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=500&q=80" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-black/35 flex items-center justify-center">
+            <div class="w-12 h-12 rounded-full bg-black/60 text-white flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition">
+              <i class="ph-fill ph-play text-lg ml-0.5"></i>
+            </div>
+          </div>
+        </div>
+
+        <div id="modalBodyPassed" class="text-xs text-slate-600 leading-relaxed space-y-2 mb-6">
+          <p class="font-medium text-slate-800">
+            Your video submitted on <span class="font-bold text-black">2026-10-24 14:32</span> has been successfully approved!
+          </p>
+          <p class="text-[11px] text-slate-500 bg-slate-100 p-2.5 rounded-xl border border-slate-200">
+            Initial movement review passed. Our editorial team is currently cutting and color grading your footage. We will contact you via email with draft titles and video cuts for your final confirmation.
+          </p>
+        </div>
+
+        <div id="modalBodyFailed" class="text-xs text-slate-700 leading-relaxed space-y-2 mb-6 hidden">
+          <p class="text-[13px] text-slate-800">
+            The video you uploaded on <span class="font-semibold text-black">2026-10-24 14:32</span> has been removed due to the following violation:
+          </p>
+          <div class="text-[11px] text-red-600 bg-red-50/80 p-2.5 rounded-xl border border-red-200 text-left font-medium space-y-1">
+            <span class="font-bold text-red-700 block">[Violation #042] Rebound path occluded & frame stability issue</span>
+            <span class="text-slate-600 block">Please ensure your camera angle clearly frames both your upper body stance and complete reflex ball rebound trajectory.</span>
+          </div>
+        </div>
+
+        <div id="modalBodyPublished" class="text-xs text-slate-600 leading-relaxed space-y-2 mb-6 hidden">
+          <p class="font-medium text-slate-800">
+            The co-created video submitted on <span class="font-bold text-black">2026-10-20 11:20</span> has been successfully published!
+          </p>
+          <p class="text-[11px] text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+            It is now live across both the official TekXYZ channel and your athlete profile. Both accounts will collect all likes, saves, and comments.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <button 
+            type="button" 
+            onclick="closeApprovalModal()" 
+            class="w-full py-3.5 rounded-full bg-[#121620] hover:bg-black text-white font-extrabold text-xs tracking-wider uppercase active:scale-95 transition"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Sheet: Choose Library vs Camera -->
+    <div id="uploadActionSheet" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex items-end">
+      <div class="w-full bg-appDark-900 rounded-t-[32px] p-5 border-t border-appDark-700 transform translate-y-full transition-transform duration-300 space-y-3" id="uploadActionSheetContent">
+        <div class="w-12 h-1.5 bg-appDark-700 rounded-full mx-auto mb-2 shrink-0"></div>
+        <div class="text-center pb-2">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-white font-display">Add Movement Clip</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">Select a capture method for your reflex ball angle</p>
+        </div>
+
+        <div class="space-y-2">
+          <button 
+            type="button" 
+            onclick="selectUploadMode('library')" 
+            class="w-full py-3.5 px-4 rounded-2xl bg-appDark-850 hover:bg-appDark-800 border border-appDark-700 flex items-center justify-between text-left active:scale-[0.99] transition group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-volt/10 border border-volt/30 flex items-center justify-center text-volt group-hover:scale-105 transition">
+                <i class="ph-bold ph-image text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-white block">Choose from Library</span>
+                <span class="text-[10px] text-slate-400">Import existing high-res footage</span>
+              </div>
+            </div>
+            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-white"></i>
+          </button>
+
+          <button 
+            type="button" 
+            onclick="selectUploadMode('camera')" 
+            class="w-full py-3.5 px-4 rounded-2xl bg-appDark-850 hover:bg-appDark-800 border border-appDark-700 flex items-center justify-between text-left active:scale-[0.99] transition group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:scale-105 transition">
+                <i class="ph-bold ph-record text-lg"></i>
+              </div>
+              <div>
+                <span class="text-xs font-bold text-white block">Record with Camera</span>
+                <span class="text-[10px] text-slate-400">Shoot live clip directly in 4K 60fps</span>
+              </div>
+            </div>
+            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-white"></i>
+          </button>
+        </div>
+
+        <button 
+          type="button" 
+          onclick="closeActionSheet()" 
+          class="w-full py-3 rounded-2xl bg-appDark-800 hover:bg-appDark-750 border border-appDark-700 text-xs font-bold text-slate-300 hover:text-white active:scale-98 transition text-center mt-2"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+
+    <!-- Slide-Up Drawer: Guidelines / Movement Requirements FAQ -->
+    <div id="faqDrawer" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 flex items-end">
+      <div class="w-full bg-appDark-900 rounded-t-[32px] p-6 max-h-[85vh] flex flex-col border-t border-appDark-700 transform translate-y-full transition-transform duration-300">
+        <div class="w-12 h-1.5 bg-appDark-700 rounded-full mx-auto mb-4 shrink-0"></div>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <h3 class="text-sm font-extrabold uppercase tracking-wider text-white font-display">Creator Guidelines & FAQ</h3>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-volt/15 text-volt border border-volt/30">ESSENTIAL</span>
+          </div>
+          <button type="button" onclick="toggleFaqDrawer(false)" class="p-1 rounded-full text-slate-400 hover:text-white">
+            <i class="ph-bold ph-x text-lg"></i>
+          </button>
+        </div>
+        
+        <div class="overflow-y-auto text-xs text-slate-300 space-y-4 leading-relaxed pr-1 no-scrollbar">
+          <div class="bg-appDark-950/90 rounded-2xl p-4 border border-volt/30 shadow-card">
+            <div class="flex items-center justify-between mb-2.5">
+              <h4 class="text-white font-extrabold text-sm tracking-tight flex items-center gap-1.5 font-display">
+                <i class="ph-bold ph-barbell text-volt text-base"></i>
+                Movement Requirements
+              </h4>
+              <span class="w-5 h-5 rounded bg-volt text-black text-[11px] font-black flex items-center justify-center font-mono">1</span>
+            </div>
+
+            <p class="text-slate-300 text-xs font-medium mb-3">Please make sure your video clearly shows:</p>
+
+            <ul class="space-y-2 mb-4 bg-appDark-900/80 p-3 rounded-xl border border-appDark-800">
+              <li class="flex items-center gap-2 text-slate-200">
+                <i class="ph-bold ph-check text-volt text-sm shrink-0"></i>
+                <span class="font-medium">Starting position</span>
+              </li>
+              <li class="flex items-center gap-2 text-slate-200">
+                <i class="ph-bold ph-check text-volt text-sm shrink-0"></i>
+                <span class="font-medium">Complete movement process</span>
+              </li>
+              <li class="flex items-center gap-2 text-slate-200">
+                <i class="ph-bold ph-check text-volt text-sm shrink-0"></i>
+                <span class="font-medium">Final position</span>
+              </li>
+              <li class="flex items-center gap-2 text-slate-200">
+                <i class="ph-bold ph-check text-volt text-sm shrink-0"></i>
+                <span class="font-medium">Key movement details</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-4 mt-3 border-t border-appDark-800 shrink-0">
+          <button type="button" onclick="toggleFaqDrawer(false)" class="w-full py-3 rounded-xl bg-appDark-800 hover:bg-appDark-750 text-white font-bold text-xs uppercase tracking-wider border border-appDark-700 active:scale-98 transition">
+            Got It, Back to Upload
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide-Up Drawer: Licensing Terms -->
+    <div id="licenseDrawer" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 flex items-end">
+      <div class="w-full bg-appDark-900 rounded-t-[32px] p-6 max-h-[82vh] flex flex-col border-t border-appDark-700 transform translate-y-full transition-transform duration-300" id="licenseDrawerContent">
+        <div class="w-12 h-1.5 bg-appDark-700 rounded-full mx-auto mb-4 shrink-0"></div>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-white flex items-center gap-2 font-display">
+            <i class="ph-bold ph-shield-check text-volt text-lg"></i>
+            Co-Creation & Rights Agreement
+          </h3>
+          <button type="button" onclick="closeDrawer('licenseDrawer')" class="p-1 rounded-full text-slate-400 hover:text-white">
+            <i class="ph-bold ph-x text-lg"></i>
+          </button>
+        </div>
+
+        <div class="overflow-y-auto text-xs text-slate-300 space-y-3 leading-relaxed pr-1 no-scrollbar flex-1">
+          <p class="font-bold text-white uppercase text-[11px] tracking-wide">1. Post-Production License</p>
+          <p>By submitting your footage, you grant our studio team a non-exclusive license to color grade, reframe, insert anatomical callouts, and apply audio remastering.</p>
+          
+          <p class="font-bold text-white uppercase text-[11px] tracking-wide">2. Joint Attribution & Shared Engagement</p>
+          <p>All collaborative videos are released under a Collab tag. Both your profile and our official channel receive 100% of accumulated views and engagement.</p>
+        </div>
+
+        <div class="pt-4 mt-3 border-t border-appDark-800">
+          <button type="button" onclick="agreeAndCloseDrawer()" class="w-full py-3.5 rounded-xl bg-volt text-black font-extrabold text-xs uppercase tracking-wider shadow-volt-sm active:scale-98 transition">
+            I Understand & Accept Terms
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Confirmation Overlay -->
+    <div id="successOverlay" class="fixed inset-0 z-50 bg-appDark-950/95 backdrop-blur-2xl opacity-0 pointer-events-none transition-all duration-300 flex items-center justify-center p-6">
+      <div class="w-full max-w-sm text-center flex flex-col items-center">
+        <div class="w-18 h-18 p-4 rounded-3xl bg-volt/15 border-2 border-volt flex items-center justify-center text-volt mb-5 shadow-volt-lg animate-bounce">
+          <i class="ph-bold ph-check text-4xl"></i>
+        </div>
+        
+        <h3 class="text-lg font-extrabold text-white mb-1 font-display uppercase tracking-tight">Co-Creation Submitted!</h3>
+        <p class="text-xs text-slate-400 leading-relaxed max-w-xs mb-5">
+          Our coaches are reviewing your reflex ball movement cues. Once approved, the editorial studio will assemble your master cut.
+        </p>
+
+        <button type="button" onclick="returnToAcademyRoot()" class="w-full py-3.5 rounded-2xl bg-volt text-black font-extrabold text-xs uppercase tracking-wider shadow-volt-sm active:scale-95 transition">
+          Return to Academy
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Toast Notification -->
+    <div id="toastNotification" class="fixed top-12 left-1/2 -translate-x-1/2 z-50 bg-appDark-800/95 backdrop-blur-xl text-white text-xs font-semibold px-4 py-2.5 rounded-full border border-appDark-600 shadow-2xl opacity-0 pointer-events-none transition-all duration-200 flex items-center gap-2">
+      <i class="ph-bold ph-info text-brandGreen text-sm"></i>
+      <span id="toastMessage">Notification message</span>
+    </div>
+
+  </div>
+
+  <script>
+    const screens = {
+      'screen-academy': document.getElementById('screen-academy'),
+      'screen-collection': document.getElementById('screen-collection'),
+      'screen-collection-detail': document.getElementById('screen-collection-detail'),
+      'screen-video-detail': document.getElementById('screen-video-detail'),
+      'screen-upload': document.getElementById('screen-upload'),
+      'screen-inbox': document.getElementById('screen-inbox'),
+      'screen-video-approval': document.getElementById('screen-video-approval')
+    };
+
+    let collectionDetailSource = 'screen-academy';
+
+    function openCategoryVideos(source) {
+      collectionDetailSource = source || 'screen-academy';
+      navigateToScreen('screen-collection-detail');
+    }
+    window.openCategoryVideos = openCategoryVideos;
+
+    function handleCollectionDetailBack() {
+      navigateToScreen(collectionDetailSource);
+    }
+    window.handleCollectionDetailBack = handleCollectionDetailBack;
+
+    function navigateToScreen(targetScreenId) {
+      const buttons = [
+        { id: 'tab-btn-1', target: 'screen-academy' },
+        { id: 'tab-btn-2', target: 'screen-collection' },
+        { id: 'tab-btn-2b', target: 'screen-collection-detail' },
+        { id: 'tab-btn-2c', target: 'screen-video-detail' },
+        { id: 'tab-btn-3', target: 'screen-upload' },
+        { id: 'tab-btn-4', target: 'screen-inbox' },
+        { id: 'tab-btn-5', target: 'screen-video-approval' }
+      ];
+
+      buttons.forEach(b => {
+        const btnEl = document.getElementById(b.id);
+        if (btnEl) {
+          if (b.target === targetScreenId) {
+            btnEl.className = 'px-2.5 py-1 rounded-full font-bold text-xs transition bg-brandGreen text-black shadow-sm shrink-0';
+          } else {
+            btnEl.className = 'px-2.5 py-1 rounded-full font-semibold text-xs text-slate-400 hover:text-white transition shrink-0';
+          }
+        }
+      });
+
+      Object.keys(screens).forEach(screenKey => {
+        const s = screens[screenKey];
+        if (!s) return;
+        if (screenKey === targetScreenId) {
+          s.classList.remove('translate-x-full', '-translate-x-full', 'opacity-0', 'pointer-events-none');
+          s.classList.add('translate-x-0', 'opacity-100');
+        } else {
+          s.classList.remove('translate-x-0', 'opacity-100');
+          s.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+        }
+      });
+    }
+    window.navigateToScreen = navigateToScreen;
+
+    // ==========================================
+    // VIDEO DETAIL SCREEN CONTROLLER
+    // ==========================================
+    let isVideoPlaying = true;
+    let isClearScreenActive = false;
+    let isGuideMode = false;
+    let currentSkillVideo = 'tekxyz';
+
+    function openVideoDetail(creatorId) {
+      currentSkillVideo = creatorId || 'tekxyz';
+      const detailToggleGuideBtn = document.getElementById('detailToggleGuideBtn');
+      const mediaSegmentedIndicators = document.getElementById('mediaSegmentedIndicators');
+      const detailCreatorHandle = document.getElementById('detailCreatorHandle');
+      const detailCreatorAvatar = document.getElementById('detailCreatorAvatar');
+      const detailCreatorLogoSvg = document.getElementById('detailCreatorLogoSvg');
+      const detailVerifiedCheck = document.getElementById('detailVerifiedCheck');
+      const detailVideoBgImg = document.getElementById('detailVideoBgImg');
+
+      isClearScreenActive = false;
+      isGuideMode = false;
+      isVideoPlaying = true;
+      document.getElementById('videoMetaOverlay').classList.remove('opacity-0', 'pointer-events-none');
+      document.getElementById('clearScreenIcon').className = 'ph-bold ph-corners-out text-lg text-slate-300';
+      document.getElementById('videoMediaContainer').classList.remove('hidden');
+      document.getElementById('guideMediaContainer').classList.add('hidden');
+      document.getElementById('detailPlayPauseBadge').classList.add('opacity-0');
+
+      if (currentSkillVideo === 'gary') {
+        detailToggleGuideBtn.classList.remove('hidden');
+        detailToggleGuideBtn.innerText = 'Image Guide';
+        if (mediaSegmentedIndicators) {
+          mediaSegmentedIndicators.classList.remove('hidden');
+          mediaSegmentedIndicators.classList.add('flex');
+        }
+        updateIndicators('video');
+        detailCreatorHandle.innerText = '@Gary';
+        if (detailCreatorAvatar) {
+          detailCreatorAvatar.classList.remove('hidden');
+          detailCreatorAvatar.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80';
+        }
+        if (detailCreatorLogoSvg) detailCreatorLogoSvg.classList.add('hidden');
+        detailVerifiedCheck.classList.add('hidden');
+        detailVideoBgImg.src = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=800&q=85';
+      } else {
+        detailToggleGuideBtn.classList.add('hidden');
+        if (mediaSegmentedIndicators) {
+          mediaSegmentedIndicators.classList.add('hidden');
+          mediaSegmentedIndicators.classList.remove('flex');
+        }
+        detailCreatorHandle.innerText = '@TekXYZ';
+        if (detailCreatorAvatar) detailCreatorAvatar.classList.add('hidden');
+        if (detailCreatorLogoSvg) detailCreatorLogoSvg.classList.remove('hidden');
+        detailVerifiedCheck.classList.remove('hidden');
+        detailVideoBgImg.src = 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=85';
+      }
+
+      navigateToScreen('screen-video-detail');
+    }
+    window.openVideoDetail = openVideoDetail;
+
+    function togglePlayState() {
+      if (isGuideMode) return;
+      isVideoPlaying = !isVideoPlaying;
+      const badge = document.getElementById('detailPlayPauseBadge');
+      const icon = document.getElementById('detailPlayPauseIcon');
+      
+      if (!isVideoPlaying) {
+        badge.classList.remove('opacity-0');
+        icon.className = 'ph-fill ph-play text-2xl ml-1';
+        toast('Video paused');
+      } else {
+        badge.classList.add('opacity-0');
+        toast('Playing video');
+      }
+    }
+    window.togglePlayState = togglePlayState;
+
+    function toggleClearScreen() {
+      isClearScreenActive = !isClearScreenActive;
+      const metaOverlay = document.getElementById('videoMetaOverlay');
+      const icon = document.getElementById('clearScreenIcon');
+      if (isClearScreenActive) {
+        metaOverlay.classList.add('opacity-0', 'pointer-events-none');
+        icon.className = 'ph-bold ph-corners-in text-lg text-brandGreen';
+        toast('Clean screen mode');
+      } else {
+        metaOverlay.classList.remove('opacity-0', 'pointer-events-none');
+        icon.className = 'ph-bold ph-corners-out text-lg text-slate-300';
+      }
+    }
+    window.toggleClearScreen = toggleClearScreen;
+
+    function updateIndicators(mode) {
+      const vTab = document.getElementById('indicatorVideoTab');
+      const gTab = document.getElementById('indicatorGuideTab');
+      if (!vTab || !gTab) return;
+      if (mode === 'video') {
+        vTab.className = 'w-14 h-1 rounded-full bg-white transition-all cursor-pointer';
+        gTab.className = 'w-14 h-1 rounded-full bg-white/30 hover:bg-white/50 transition-all cursor-pointer';
+      } else {
+        vTab.className = 'w-14 h-1 rounded-full bg-white/30 hover:bg-white/50 transition-all cursor-pointer';
+        gTab.className = 'w-14 h-1 rounded-full bg-white transition-all cursor-pointer';
+      }
+    }
+
+    function switchMediaTo(targetMode) {
+      const videoContainer = document.getElementById('videoMediaContainer');
+      const guideContainer = document.getElementById('guideMediaContainer');
+      const toggleBtn = document.getElementById('detailToggleGuideBtn');
+
+      if (targetMode === 'guide') {
+        isGuideMode = true;
+        videoContainer.classList.add('hidden');
+        guideContainer.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.innerText = 'View video';
+        updateIndicators('guide');
+        toast('Switched to Image Guide');
+      } else {
+        isGuideMode = false;
+        guideContainer.classList.add('hidden');
+        videoContainer.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.innerText = 'Image Guide';
+        updateIndicators('video');
+        toast('Switched to Video');
+      }
+    }
+    window.switchMediaTo = switchMediaTo;
+
+    function toggleMediaMode() {
+      if (!isGuideMode) {
+        switchMediaTo('guide');
+      } else {
+        switchMediaTo('video');
+      }
+    }
+    window.toggleMediaMode = toggleMediaMode;
+
+    function openSkillMoreDrawer() {
+      const drawer = document.getElementById('skillMoreDrawer');
+      const content = document.getElementById('skillMoreDrawerContent');
+      const videoFrame = document.getElementById('videoDetailMainFrame');
+      const videoMediaContainer = document.getElementById('videoMediaContainer');
+      const indicator = document.getElementById('drawerVideoIndicator');
+      const metaOverlay = document.getElementById('videoMetaOverlay');
+
+      if (videoFrame) {
+        videoFrame.classList.remove('inset-0');
+        videoFrame.classList.add('top-11', 'left-1/2', '-translate-x-1/2', 'w-[200px]', 'h-[350px]', 'rounded-2xl', 'overflow-hidden', 'shadow-2xl');
+      }
+      if (videoMediaContainer) {
+        videoMediaContainer.classList.add('rounded-2xl', 'overflow-hidden');
+      }
+      if (indicator) {
+        indicator.classList.remove('opacity-0');
+      }
+      if (metaOverlay) {
+        metaOverlay.classList.add('opacity-0', 'pointer-events-none');
+      }
+
+      drawer.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('translate-y-full');
+    }
+    window.openSkillMoreDrawer = openSkillMoreDrawer;
+
+    function closeSkillMoreDrawer() {
+      const drawer = document.getElementById('skillMoreDrawer');
+      const content = document.getElementById('skillMoreDrawerContent');
+      const videoFrame = document.getElementById('videoDetailMainFrame');
+      const videoMediaContainer = document.getElementById('videoMediaContainer');
+      const indicator = document.getElementById('drawerVideoIndicator');
+      const metaOverlay = document.getElementById('videoMetaOverlay');
+
+      if (videoFrame) {
+        videoFrame.classList.add('inset-0');
+        videoFrame.classList.remove('top-11', 'left-1/2', '-translate-x-1/2', 'w-[200px]', 'h-[350px]', 'rounded-2xl', 'overflow-hidden', 'shadow-2xl');
+      }
+      if (videoMediaContainer) {
+        videoMediaContainer.classList.remove('rounded-2xl', 'overflow-hidden');
+      }
+      if (indicator) {
+        indicator.classList.add('opacity-0');
+      }
+      if (metaOverlay && !isClearScreenActive) {
+        metaOverlay.classList.remove('opacity-0', 'pointer-events-none');
+      }
+
+      content.classList.add('translate-y-full');
+      drawer.classList.add('opacity-0', 'pointer-events-none');
+    }
+    window.closeSkillMoreDrawer = closeSkillMoreDrawer;
+
+    function toggleLike(btn) {
+      const icon = btn.querySelector('i');
+      if (icon.classList.contains('text-red-500')) {
+        icon.classList.remove('text-red-500');
+        icon.classList.add('text-white');
+      } else {
+        icon.classList.add('text-red-500');
+        icon.classList.remove('text-white');
+        toast('Liked!');
+      }
+    }
+    window.toggleLike = toggleLike;
+
+    function toggleSave(btn) {
+      const icon = btn.querySelector('i');
+      if (icon.classList.contains('text-amber-400')) {
+        icon.classList.remove('text-amber-400');
+        icon.classList.add('text-white');
+      } else {
+        icon.classList.add('text-amber-400');
+        icon.classList.remove('text-white');
+        toast('Saved to collection!');
+      }
+    }
+    window.toggleSave = toggleSave;
+
+    let isCollabDescExpanded = false;
+    function toggleCollectionDesc() {
+      const shortEl = document.getElementById('collabDescShort');
+      const fullEl = document.getElementById('collabDescFull');
+      const btnEl = document.getElementById('collabDescMoreBtn');
+      if (!shortEl || !fullEl || !btnEl) return;
+
+      isCollabDescExpanded = !isCollabDescExpanded;
+      if (isCollabDescExpanded) {
+        shortEl.classList.add('hidden');
+        fullEl.classList.remove('hidden');
+        btnEl.innerText = 'less';
+      } else {
+        fullEl.classList.add('hidden');
+        shortEl.classList.remove('hidden');
+        btnEl.innerText = 'more';
+      }
+    }
+    window.toggleCollectionDesc = toggleCollectionDesc;
+
+    // Video Approval Modal
+    let currentModalType = 'passed';
+    function openApprovalModal(type) {
+      currentModalType = type;
+      const modal = document.getElementById('approvalDetailModal');
+      const box = document.getElementById('approvalModalBox');
+      const hPassed = document.getElementById('modalHeaderPassed');
+      const hFailed = document.getElementById('modalHeaderFailed');
+      const hPublished = document.getElementById('modalHeaderPublished');
+      const bPassed = document.getElementById('modalBodyPassed');
+      const bFailed = document.getElementById('modalBodyFailed');
+      const bPublished = document.getElementById('modalBodyPublished');
+      const modalVideoImg = document.getElementById('modalVideoImg');
+
+      hPassed.classList.add('hidden');
+      hPassed.classList.remove('flex');
+      hFailed.classList.add('hidden');
+      hFailed.classList.remove('flex');
+      hPublished.classList.add('hidden');
+      hPublished.classList.remove('flex');
+      bPassed.classList.add('hidden');
+      bFailed.classList.add('hidden');
+      bPublished.classList.add('hidden');
+
+      if (type === 'passed') {
+        hPassed.classList.remove('hidden');
+        hPassed.classList.add('flex');
+        bPassed.classList.remove('hidden');
+        modalVideoImg.src = 'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=500&q=80';
+      } else if (type === 'failed') {
+        hFailed.classList.remove('hidden');
+        hFailed.classList.add('flex');
+        bFailed.classList.remove('hidden');
+        modalVideoImg.src = 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=500&q=80';
+      } else if (type === 'published') {
+        hPublished.classList.remove('hidden');
+        hPublished.classList.add('flex');
+        bPublished.classList.remove('hidden');
+        modalVideoImg.src = 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=500&q=80';
+      }
+
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      box.classList.remove('scale-95');
+      box.classList.add('scale-100');
+    }
+    window.openApprovalModal = openApprovalModal;
+
+    function closeApprovalModal() {
+      const modal = document.getElementById('approvalDetailModal');
+      const box = document.getElementById('approvalModalBox');
+      box.classList.remove('scale-100');
+      box.classList.add('scale-95');
+      modal.classList.add('opacity-0', 'pointer-events-none');
+    }
+    window.closeApprovalModal = closeApprovalModal;
+
+    function returnToAcademyRoot() {
+      const overlay = document.getElementById('successOverlay');
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      navigateToScreen('screen-academy');
+      toast('Returned to Academy');
+    }
+    window.returnToAcademyRoot = returnToAcademyRoot;
+
+    // ==========================================
+    // UPLOAD LOGIC
+    // ==========================================
+    const MAX_ALLOWED_CLIPS = 6;
+    const formState = {
+      videoClips: [],
+      title: '',
+      notes: '',
+      isAuthorized: false
+    };
+
+    const MOCK_CLIP_THUMBNAILS = [
+      'https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=400&q=80',
+      'https://images.unsplash.com/photo-1599058917212-d750089bc07e?auto=format&fit=crop&w=400&q=80'
+    ];
+
+    const videoClipsGrid = document.getElementById('videoClipsGrid');
+    const clipCounterBadge = document.getElementById('clipCounterBadge');
+    const clipsReqText = document.getElementById('clipsReqText');
+    const clipsReqAlert = document.getElementById('clipsReqAlert');
+    const clipsReqIcon = document.getElementById('clipsReqIcon');
+    const actionTitle = document.getElementById('actionTitle');
+    const actionNotes = document.getElementById('actionNotes');
+    const titleCount = document.getElementById('titleCount');
+    const notesCount = document.getElementById('notesCount');
+    const clearTitleBtn = document.getElementById('clearTitleBtn');
+    const authCheckbox = document.getElementById('authCheckbox');
+    const submitButton = document.getElementById('submitButton');
+    const notesMinAlert = document.getElementById('notesMinAlert');
+    const notesNeededCount = document.getElementById('notesNeededCount');
+
+    function openActionSheet() {
+      if (formState.videoClips.length >= MAX_ALLOWED_CLIPS) {
+        toast(`Maximum limit of ${MAX_ALLOWED_CLIPS} clips reached`);
+        return;
+      }
+      const sheet = document.getElementById('uploadActionSheet');
+      const content = document.getElementById('uploadActionSheetContent');
+      sheet.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('translate-y-full');
+    }
+    window.openActionSheet = openActionSheet;
+
+    function closeActionSheet() {
+      const sheet = document.getElementById('uploadActionSheet');
+      const content = document.getElementById('uploadActionSheetContent');
+      content.classList.add('translate-y-full');
+      sheet.classList.add('opacity-0', 'pointer-events-none');
+    }
+    window.closeActionSheet = closeActionSheet;
+
+    function selectUploadMode(mode) {
+      closeActionSheet();
+      if (formState.videoClips.length >= MAX_ALLOWED_CLIPS) {
+        toast(`Maximum limit of ${MAX_ALLOWED_CLIPS} clips reached`);
+        return;
+      }
+      if (mode === 'library') {
+        toast('Opening photo library...');
+        setTimeout(() => {
+          addNewClip(`Clip_${formState.videoClips.length + 1}_Library.mov`, '0:34');
+        }, 400);
+      } else {
+        toast('Launching 4K 60fps camera...');
+        setTimeout(() => {
+          addNewClip(`Clip_${formState.videoClips.length + 1}_LiveRec.mp4`, '0:45');
+        }, 400);
+      }
+    }
+    window.selectUploadMode = selectUploadMode;
+
+    function addNewClip(fileName, durationStr) {
+      if (formState.videoClips.length >= MAX_ALLOWED_CLIPS) return;
+      const index = formState.videoClips.length;
+      const thumb = MOCK_CLIP_THUMBNAILS[index % MOCK_CLIP_THUMBNAILS.length];
+      const newClip = {
+        id: 'clip_' + Date.now(),
+        name: fileName,
+        duration: durationStr || '0:30',
+        thumbnail: thumb
+      };
+
+      formState.videoClips.push(newClip);
+      renderClipsGrid();
+      toast(`Added clip ${formState.videoClips.length} of ${MAX_ALLOWED_CLIPS}`);
+      toggleSubmitBtnState();
+    }
+
+    function removeClip(clipId) {
+      formState.videoClips = formState.videoClips.filter(c => c.id !== clipId);
+      renderClipsGrid();
+      toast('Clip removed');
+      toggleSubmitBtnState();
+    }
+    window.removeClip = removeClip;
+
+    function renderClipsGrid() {
+      const count = formState.videoClips.length;
+      clipCounterBadge.innerText = `${count}/${MAX_ALLOWED_CLIPS}`;
+      
+      if (count === 0) {
+        clipCounterBadge.className = 'text-slate-400 font-bold';
+        clipsReqAlert.className = 'bg-appDark-900/90 rounded-xl p-2.5 border border-appDark-800 flex items-center gap-2 text-[11px] text-slate-400';
+        if (clipsReqIcon) clipsReqIcon.className = 'ph-bold ph-info text-slate-400 text-sm shrink-0';
+        clipsReqText.innerText = `Upload 1 to ${MAX_ALLOWED_CLIPS} video clips demonstrating your setup, execution, and key angles.`;
+
+        videoClipsGrid.innerHTML = `
+          <button 
+            type="button" 
+            id="addClipTriggerBtn" 
+            onclick="openActionSheet()"
+            class="group aspect-[3/4] rounded-2xl border-2 border-dashed border-appDark-700 hover:border-volt/70 bg-appDark-900/60 hover:bg-appDark-900 flex flex-col items-center justify-center p-2.5 transition text-center cursor-pointer active:scale-95 col-span-3 py-7"
+          >
+            <div class="w-12 h-12 rounded-xl bg-appDark-800 border border-appDark-700 group-hover:border-volt/50 flex items-center justify-center text-volt mb-2 group-hover:scale-105 transition">
+              <i class="ph-bold ph-plus text-xl"></i>
+            </div>
+            <span class="text-xs font-bold text-white group-hover:text-volt transition">Upload</span>
+            <span class="text-[10px] text-slate-400 mt-0.5">Tap to select photo library or record (1–${MAX_ALLOWED_CLIPS} clips)</span>
+          </button>
+        `;
+        return;
+      }
+
+      let html = '';
+      formState.videoClips.forEach((clip, idx) => {
+        html += `
+          <div class="relative group aspect-[3/4] rounded-2xl overflow-hidden bg-appDark-900 border border-appDark-700 shadow-sm">
+            <img src="${clip.thumbnail}" alt="Clip ${idx + 1}" class="w-full h-full object-cover opacity-85" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/60 flex flex-col justify-between p-2">
+              <div class="flex items-center justify-between">
+                <span class="px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-md text-[9px] font-bold text-white font-mono">
+                  #${idx + 1}
+                </span>
+                <button 
+                  type="button" 
+                  onclick="removeClip('${clip.id}')" 
+                  class="w-6 h-6 rounded-full bg-black/70 hover:bg-red-500/80 text-slate-300 hover:text-white flex items-center justify-center transition"
+                  title="Delete clip"
+                >
+                  <i class="ph-bold ph-x text-xs"></i>
+                </button>
+              </div>
+
+              <div>
+                <span class="block text-[10px] font-mono font-medium text-volt">${clip.duration}</span>
+                <span class="block text-[9px] text-slate-300 truncate">${clip.name}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      if (count < MAX_ALLOWED_CLIPS) {
+        html += `
+          <button 
+            type="button" 
+            onclick="openActionSheet()"
+            class="aspect-[3/4] rounded-2xl border-2 border-dashed border-appDark-700 hover:border-volt/70 bg-appDark-900/60 hover:bg-appDark-900 flex flex-col items-center justify-center p-2 transition text-center cursor-pointer active:scale-95 group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-appDark-800 border border-appDark-700 group-hover:border-volt/50 flex items-center justify-center text-volt mb-1 transition">
+              <i class="ph-bold ph-plus text-base"></i>
+            </div>
+            <span class="text-[11px] font-bold text-slate-200 group-hover:text-volt">Upload</span>
+            <span class="text-[9px] text-slate-400">Clip ${count + 1}</span>
+          </button>
+        `;
+      }
+
+      videoClipsGrid.innerHTML = html;
+    }
+
+    function handleTitleInput(input) {
+      formState.title = input.value;
+      const len = input.value.length;
+      titleCount.innerText = `${len}/40`;
+      clearTitleBtn.classList.toggle('hidden', len === 0);
+      toggleSubmitBtnState();
+    }
+    window.handleTitleInput = handleTitleInput;
+
+    function handleNotesInput(textarea) {
+      formState.notes = textarea.value;
+      const len = textarea.value.length;
+      notesCount.innerText = `${len}/500`;
+
+      if (len < 20 && len > 0) {
+        notesMinAlert.classList.remove('hidden');
+        notesNeededCount.innerText = 20 - len;
+      } else {
+        notesMinAlert.classList.add('hidden');
+      }
+      toggleSubmitBtnState();
+    }
+    window.handleNotesInput = handleNotesInput;
+
+    function clearInput(id) {
+      const el = document.getElementById(id);
+      el.value = '';
+      if (id === 'actionTitle') handleTitleInput(el);
+    }
+    window.clearInput = clearInput;
+
+    function toggleSubmitBtnState() {
+      formState.isAuthorized = authCheckbox.checked;
+      const hasValidClips = formState.videoClips.length >= 1 && formState.videoClips.length <= MAX_ALLOWED_CLIPS;
+      const isValid = 
+        hasValidClips && 
+        formState.title.trim().length >= 3 && 
+        formState.notes.trim().length >= 20 && 
+        formState.isAuthorized;
+
+      if (isValid) {
+        submitButton.removeAttribute('disabled');
+        submitButton.classList.remove('opacity-40');
+      } else {
+        submitButton.classList.add('opacity-40');
+      }
+    }
+    window.toggleSubmitBtnState = toggleSubmitBtnState;
+
+    function handleFormSubmit() {
+      if (formState.videoClips.length === 0) {
+        toast('Please upload at least 1 video clip');
+        return;
+      }
+      if (formState.title.trim().length < 3) {
+        toast('Please enter a title (at least 3 characters)');
+        actionTitle.focus();
+        return;
+      }
+      if (formState.notes.trim().length < 20) {
+        toast('Please provide at least 20 characters of form cues');
+        actionNotes.focus();
+        return;
+      }
+      if (!authCheckbox.checked) {
+        toast('Please agree to the Co-Creation Licensing terms');
+        return;
+      }
+
+      const overlay = document.getElementById('successOverlay');
+      overlay.classList.remove('opacity-0', 'pointer-events-none');
+    }
+    window.handleFormSubmit = handleFormSubmit;
+
+    function openDrawer(drawerId) {
+      const drawer = document.getElementById(drawerId);
+      const content = drawer.querySelector('div');
+      drawer.classList.remove('opacity-0', 'pointer-events-none');
+      content.classList.remove('translate-y-full');
+    }
+    window.openDrawer = openDrawer;
+
+    function closeDrawer(drawerId) {
+      const drawer = document.getElementById(drawerId);
+      const content = drawer.querySelector('div');
+      content.classList.add('translate-y-full');
+      drawer.classList.add('opacity-0', 'pointer-events-none');
+    }
+    window.closeDrawer = closeDrawer;
+
+    function agreeAndCloseDrawer() {
+      authCheckbox.checked = true;
+      toggleSubmitBtnState();
+      closeDrawer('licenseDrawer');
+      toast('Agreement accepted');
+    }
+    window.agreeAndCloseDrawer = agreeAndCloseDrawer;
+
+    function toggleFaqDrawer(open) {
+      if (open) openDrawer('faqDrawer');
+      else closeDrawer('faqDrawer');
+    }
+    window.toggleFaqDrawer = toggleFaqDrawer;
+
+    let toastTimeout;
+    function toast(msg) {
+      const toastEl = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.innerText = msg;
+      
+      clearTimeout(toastTimeout);
+      toastEl.classList.remove('opacity-0', 'pointer-events-none');
+      toastEl.classList.add('opacity-100');
+
+      toastTimeout = setTimeout(() => {
+        toastEl.classList.add('opacity-0', 'pointer-events-none');
+        toastEl.classList.remove('opacity-100');
+      }, 2300);
+    }
+    window.toast = toast;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const inboxBtn = document.getElementById('headerInboxBtn');
+      if (inboxBtn) {
+        inboxBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          navigateToScreen('screen-inbox');
+        });
+      }
+    });
+
+    window.onload = function () {
+      renderClipsGrid();
+      toggleSubmitBtnState();
+    };
+  </script>
+</body>
+</html>
