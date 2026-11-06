@@ -1,0 +1,1644 @@
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { 
+  Eye, 
+  EyeOff, 
+  Check, 
+  RotateCw, 
+  ChevronRight, 
+  ChevronLeft, 
+  Search, 
+  X, 
+  Camera, 
+  Image as ImageIcon, 
+  User, 
+  AlertCircle,
+  Clock,
+  Info,
+  Heart,
+  MessageSquare,
+  Bookmark,
+  Share2,
+  MoreVertical,
+  Home,
+  BarChart2,
+  MapPin,
+  SquarePen,
+  Plus
+} from 'lucide-react';
+
+// Brand colors
+const THEME = {
+  accent: '#a3e635', // Lime neon
+  accentHover: '#84cc16',
+  accentDim: '#4d7c0f',
+  bgDark: '#000000',
+  cardDark: '#0d0d0d',
+  inputBg: '#121212',
+  inputBorder: '#27272a',
+  textSecondary: '#9ca3af',
+};
+
+// Brand Logo Component matching image_f5a5ab.png
+const BrandLogo = ({ size = 80, className = "" }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 100 100" 
+    className={`drop-shadow-[0_0_16px_rgba(48,232,189,0.35)] ${className}`}
+  >
+    <defs>
+      <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#b4f800" />
+        <stop offset="50%" stopColor="#22e584" />
+        <stop offset="100%" stopColor="#00f0ff" />
+      </linearGradient>
+    </defs>
+    <circle 
+      cx="50" 
+      cy="50" 
+      r="44" 
+      fill="none" 
+      stroke="url(#brandGrad)" 
+      strokeWidth="6.5" 
+    />
+    <polygon points="36,25 48,25 43,36" fill="url(#brandGrad)" />
+    <polygon points="54,23 68,25 44,77 33,75" fill="url(#brandGrad)" />
+    <polygon points="54,75 66,75 61,63" fill="url(#brandGrad)" />
+  </svg>
+);
+
+// Preset Countries list
+const COUNTRY_LIST = [
+  "Afghanistan", "Åland Islands", "Albania", "Algeria", "American Samoa",
+  "Andorra", "Angola", "Anguilla", "Antarctica", "Antigua and Barbuda",
+  "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan",
+  "Brazil", "Canada", "China", "France", "Germany", "Hong Kong",
+  "Japan", "Singapore", "United Kingdom", "United States"
+];
+
+// Default Avatar Presets
+const AVATAR_OPTIONS = [
+  { id: 'lime_bolt', bg: '#a3e635', iconColor: '#000000', label: 'Neon Runner' },
+  { id: 'cyan_speed', bg: '#06b6d4', iconColor: '#ffffff', label: 'Speed Cyan' },
+  { id: 'amber_power', bg: '#f59e0b', iconColor: '#ffffff', label: 'Power Orange' },
+  { id: 'violet_zen', bg: '#8b5cf6', iconColor: '#ffffff', label: 'Zen Violet' }
+];
+
+// Months for DOB Picker
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Reusable iOS-Style Wheel Picker Component with robust scroll & click sync
+const WheelPicker = ({ items, selectedValue, onValueChange, labelSuffix = "", width = "w-full" }) => {
+  const containerRef = useRef(null);
+  const itemHeight = 44; // px matching iOS touch target
+  const isDragging = useRef(false);
+  const startY = useRef(0);
+  const startScrollTop = useRef(0);
+  const scrollTimeout = useRef(null);
+
+  // Sync scroll position when selectedValue changes externally
+  useEffect(() => {
+    const index = items.indexOf(selectedValue);
+    if (index !== -1 && containerRef.current) {
+      const targetScroll = index * itemHeight;
+      if (Math.abs(containerRef.current.scrollTop - targetScroll) > 2) {
+        containerRef.current.scrollTop = targetScroll;
+      }
+    }
+  }, [selectedValue, items]);
+
+  const snapToNearest = () => {
+    if (!containerRef.current) return;
+    const scrollTop = containerRef.current.scrollTop;
+    const index = Math.max(0, Math.min(items.length - 1, Math.round(scrollTop / itemHeight)));
+    containerRef.current.scrollTo({
+      top: index * itemHeight,
+      behavior: 'smooth'
+    });
+    if (items[index] !== undefined && items[index] !== selectedValue) {
+      onValueChange(items[index]);
+    }
+  };
+
+  const handleScroll = (e) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    const index = Math.max(0, Math.min(items.length - 1, Math.round(scrollTop / itemHeight)));
+    if (items[index] !== undefined && items[index] !== selectedValue) {
+      onValueChange(items[index]);
+    }
+
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      snapToNearest();
+    }, 120);
+  };
+
+  // Mouse drag support for desktop preview
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    startY.current = e.clientY;
+    startScrollTop.current = containerRef.current.scrollTop;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const deltaY = e.clientY - startY.current;
+    containerRef.current.scrollTop = startScrollTop.current - deltaY;
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    snapToNearest();
+  };
+
+  return (
+    <div 
+      className={`relative h-[220px] overflow-hidden select-none ${width}`}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* Center Highlight Selection Bar */}
+      <div 
+        className="absolute top-[88px] left-1 right-1 h-[44px] bg-neutral-100/90 rounded-xl pointer-events-none border border-neutral-200/80 shadow-xs"
+        style={{ zIndex: 1 }}
+      />
+
+      {/* Top & Bottom gradient fades for realistic 3D depth */}
+      <div className="absolute inset-x-0 top-0 h-[88px] bg-gradient-to-b from-white via-white/80 to-transparent pointer-events-none z-10" />
+      <div className="absolute inset-x-0 bottom-0 h-[88px] bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none z-10" />
+
+      {/* Scrollable Container with Snap */}
+      <div 
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="h-full overflow-y-scroll no-scrollbar scroll-smooth snap-y snap-mandatory py-[88px]"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {items.map((item, idx) => {
+          const isSelected = item === selectedValue;
+          return (
+            <div 
+              key={idx}
+              onClick={() => {
+                if (containerRef.current) {
+                  containerRef.current.scrollTo({
+                    top: idx * itemHeight,
+                    behavior: 'smooth'
+                  });
+                }
+                onValueChange(item);
+              }}
+              className={`h-[44px] flex items-center justify-center snap-center cursor-pointer transition-all duration-150 relative z-2 text-base ${
+                isSelected 
+                  ? 'text-neutral-900 font-bold scale-105' 
+                  : 'text-neutral-400 font-medium scale-95 opacity-55'
+              }`}
+            >
+              <span>{item}</span>
+              {labelSuffix && <span className="ml-1 text-sm font-semibold">{labelSuffix}</span>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  // Navigation Screens:
+  // 'LOGIN' -> 'STEP_USERNAME' -> 'STEP_PROFILE' -> 'STEP_FITNESS' -> 'HOME'
+  // Or for 3rd-party: 'LOGIN' -> 'STEP_THIRD_PARTY_COUNTRY' -> 'STEP_FITNESS' -> 'HOME'
+  const [currentScreen, setCurrentScreen] = useState('LOGIN');
+
+  // Bottom Sheets / Modals
+  const [showSignUpSheet, setShowSignUpSheet] = useState(false);
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [showAvatarPickerModal, setShowAvatarPickerModal] = useState(false);
+  const [activePicker, setActivePicker] = useState(null); // 'gender' | 'dob' | 'height' | 'weight' | null
+
+  // Global Toast Notification State
+  const [toastMessage, setToastMessage] = useState(null);
+  const showToast = (msg, type = 'error') => {
+    setToastMessage({ text: msg, type });
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3200);
+  };
+
+  // Sign Up Form States
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [countdown, setCountdown] = useState(0);
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [codeSent, setCodeSent] = useState(false);
+
+  // Step 1: Username & Password
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSocialAuth, setIsSocialAuth] = useState(false);
+
+  // Step 2: Profile Details
+  const [selectedAvatar, setSelectedAvatar] = useState(AVATAR_OPTIONS[0]);
+  const [customAvatarUrl, setCustomAvatarUrl] = useState(null);
+  const [displayName, setDisplayName] = useState('');
+  const [recommendations, setRecommendations] = useState([]);
+  const [country, setCountry] = useState('');
+  const [countrySearch, setCountrySearch] = useState('');
+
+  // Step 3: Fitness Metric States
+  const [fitnessData, setFitnessData] = useState({
+    gender: '',
+    dob: '',
+    height: '',
+    weight: ''
+  });
+
+  // Modal Specific Selection Units & Working States
+  // Height State
+  const [heightUnit, setHeightUnit] = useState('cm'); // 'cm' | 'ft/in'
+  const [selectedCm, setSelectedCm] = useState(180);
+  const [selectedFt, setSelectedFt] = useState(5);
+  const [selectedIn, setSelectedIn] = useState(11);
+
+  // Weight State
+  const [weightUnit, setWeightUnit] = useState('kg'); // 'kg' | 'lbs'
+  const [selectedKg, setSelectedKg] = useState(80);
+  const [selectedLbs, setSelectedLbs] = useState(180);
+
+  // DOB States
+  const [selectedMonth, setSelectedMonth] = useState('Oct');
+  const [selectedDay, setSelectedDay] = useState(8);
+  const [selectedYear, setSelectedYear] = useState(1999);
+
+  // Gender State
+  const [selectedGender, setSelectedGender] = useState('Male');
+
+  // Video Home states
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [showFullCaption, setShowFullCaption] = useState(false);
+
+  // Countdown timer for code resend
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  // Generate dynamic recommendation pills based on username
+  const generateRecommendations = (baseName) => {
+    const raw = (baseName || 'User').replace(/[^a-zA-Z0-9]/g, '');
+    const currentYear = 2026;
+    const randomNum1 = Math.floor(100 + Math.random() * 900);
+    const randomNum2 = Math.floor(10000 + Math.random() * 90000);
+    return [`${raw}${currentYear}`, `${raw}${randomNum2}`, `${raw}_${randomNum1}`];
+  };
+
+  const initStepProfile = (baseUser) => {
+    const effectiveUser = baseUser || 'Runner';
+    setDisplayName(effectiveUser);
+    setRecommendations(generateRecommendations(effectiveUser));
+  };
+
+  const handleRefreshRecommendations = () => {
+    setRecommendations(generateRecommendations(displayName || username || 'User'));
+    showToast('Updated name recommendations', 'success');
+  };
+
+  const handleSendCode = () => {
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid email address');
+      return;
+    }
+    setCodeSent(true);
+    setCountdown(60);
+    showToast('Code sent! Use 212145 or 123456', 'success');
+  };
+
+  const handleVerifyAndContinue = () => {
+    if (!email) {
+      showToast('Please enter your email address');
+      return;
+    }
+    if (!code) {
+      showToast('Please enter the 6-digit verification code');
+      return;
+    }
+    if (!agreedToTerms) {
+      showToast('Please accept the Terms of Service to continue');
+      return;
+    }
+    if (code !== '212145' && code !== '123456') {
+      showToast('Verification code error. Please try again.');
+      return;
+    }
+
+    setShowSignUpSheet(false);
+    setIsSocialAuth(false);
+    setCurrentScreen('STEP_USERNAME');
+  };
+
+  const handleThirdPartyAuth = (provider) => {
+    setShowSignUpSheet(false);
+    setIsSocialAuth(true);
+
+    const randomId = Math.floor(1000 + Math.random() * 9000);
+    const generatedUsername = `${provider}User${randomId}`;
+    setUsername(generatedUsername);
+    setDisplayName(generatedUsername);
+    setRecommendations(generateRecommendations(generatedUsername));
+
+    showToast(`Signed in with ${provider}. ID: ${generatedUsername}`, 'success');
+    setCurrentScreen('STEP_THIRD_PARTY_COUNTRY');
+  };
+
+  const validateUsername = (raw) => {
+    const trimmed = raw.trim();
+    if (trimmed.length < 3 || trimmed.length > 15) {
+      return { valid: false, error: 'Username must be within 3-15 characters.' };
+    }
+    const letterMatches = trimmed.match(/[a-zA-Z]/g);
+    if (!letterMatches || letterMatches.length < 3) {
+      return { valid: false, error: 'Must contain at least 3 letters.' };
+    }
+    if (!/^[a-zA-Z0-9]+$/.test(trimmed)) {
+      return { valid: false, error: 'Only letters and numbers allowed.' };
+    }
+    return { valid: true, error: null };
+  };
+
+  const handleUsernameNext = () => {
+    const validation = validateUsername(username);
+    if (!validation.valid) {
+      showToast(validation.error);
+      return;
+    }
+    if (!password || password.length < 6 || password.length > 20) {
+      showToast('Password must be between 6 and 20 characters.');
+      return;
+    }
+    initStepProfile(username);
+    setCurrentScreen('STEP_PROFILE');
+  };
+
+  const handleProfileNext = () => {
+    if (!country) {
+      showToast('Please select your Country/Region (mandatory).');
+      return;
+    }
+    setCurrentScreen('STEP_FITNESS');
+  };
+
+  const handleThirdPartyCountryNext = () => {
+    if (!country) {
+      showToast('Please select your Country/Region.');
+      return;
+    }
+    setCurrentScreen('STEP_FITNESS');
+  };
+
+  const handleCompleteSignUp = (skipped = false) => {
+    if (skipped) {
+      showToast('Skipped body stats. Heading to Home Feed.', 'info');
+    } else {
+      showToast('Profile completed! Welcome to your Home Feed.', 'success');
+    }
+    setCurrentScreen('HOME');
+  };
+
+  const filteredCountries = useMemo(() => {
+    if (!countrySearch.trim()) return COUNTRY_LIST;
+    return COUNTRY_LIST.filter(c => 
+      c.toLowerCase().includes(countrySearch.toLowerCase())
+    );
+  }, [countrySearch]);
+
+  const handleSelectMockPhoto = (type) => {
+    if (type === 'camera') {
+      setCustomAvatarUrl('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80');
+      showToast('Captured photo from Camera', 'success');
+    } else if (type === 'album') {
+      setCustomAvatarUrl('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80');
+      showToast('Selected photo from Album', 'success');
+    } else {
+      setCustomAvatarUrl(null);
+      showToast('Default preset avatar restored', 'info');
+    }
+    setShowAvatarPickerModal(false);
+  };
+
+  // Generate lists for wheel pickers
+  const cmList = useMemo(() => Array.from({ length: 91 }, (_, i) => 130 + i), []); // 130 - 220 cm
+  const ftList = useMemo(() => [4, 5, 6, 7], []);
+  const inList = useMemo(() => Array.from({ length: 12 }, (_, i) => i), []); // 0 - 11 in
+  const kgList = useMemo(() => Array.from({ length: 131 }, (_, i) => 35 + i), []); // 35 - 165 kg
+  const lbsList = useMemo(() => Array.from({ length: 281 }, (_, i) => 80 + i), []); // 80 - 360 lbs
+  const daysList = useMemo(() => Array.from({ length: 31 }, (_, i) => i + 1), []);
+  const yearsList = useMemo(() => Array.from({ length: 80 }, (_, i) => 2012 - i), []); // 2012 down to 1933
+  const genderList = useMemo(() => ['Male', 'Female', 'Others'], []);
+
+  return (
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-2 sm:p-6 font-sans text-white select-none">
+      
+      {/* Mobile Device Frame */}
+      <div className="relative w-full max-w-[410px] h-[844px] max-h-[92vh] bg-black rounded-[48px] border-[7px] border-neutral-800 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col justify-between">
+        
+        {/* Dynamic Island / Notch + Status Bar */}
+        <div className="absolute top-0 left-0 right-0 z-40 px-7 pt-3 pb-1 flex justify-between items-center text-xs text-white/90 pointer-events-none">
+          <span className="font-semibold tracking-tight text-[13px]">14:44</span>
+          <div className="w-24 h-4 bg-neutral-900 rounded-full border border-neutral-800/60" />
+          <div className="flex items-center space-x-1.5 text-[11px]">
+            <span className="font-medium">5G</span>
+            <div className="w-4 h-2.5 border border-white/80 rounded-sm p-0.5 flex items-center">
+              <div className="h-full w-full bg-white rounded-2xs" />
+            </div>
+          </div>
+        </div>
+
+        {/* Global Toast Notification */}
+        {toastMessage && (
+          <div className="absolute top-12 left-4 right-4 z-50 animate-bounce duration-300">
+            <div className={`p-3.5 rounded-2xl shadow-xl flex items-center space-x-2.5 text-xs font-medium border backdrop-blur-md ${
+              toastMessage.type === 'error' 
+                ? 'bg-rose-950/90 text-rose-200 border-rose-800/80' 
+                : toastMessage.type === 'success'
+                ? 'bg-lime-950/90 text-lime-200 border-lime-800/80'
+                : 'bg-neutral-900/90 text-neutral-200 border-neutral-700'
+            }`}>
+              {toastMessage.type === 'error' ? (
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              ) : (
+                <Check className="w-4 h-4 text-lime-400 shrink-0" />
+              )}
+              <span className="flex-1 leading-snug">{toastMessage.text}</span>
+              <button onClick={() => setToastMessage(null)} className="text-white/60 hover:text-white">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Screen Content Wrapper */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden pt-10 pb-6 flex flex-col relative">
+
+          {/* ========================================================
+              SCREEN 0: LOGIN SCREEN
+          ======================================================== */}
+          {currentScreen === 'LOGIN' && (
+            <div className="flex-1 flex flex-col px-7 pt-4 pb-4 justify-between">
+              <div className="flex justify-end">
+                <button 
+                  onClick={() => setCurrentScreen('HOME')}
+                  className="text-xs px-3 py-1 rounded-md border border-[#9fe800]/50 text-[#9fe800] hover:bg-[#9fe800]/10 transition-colors"
+                >
+                  skip
+                </button>
+              </div>
+
+              {/* Exact Brand Logo matching image_f5a5ab.png */}
+              <div className="flex flex-col items-center my-6">
+                <BrandLogo size={84} />
+              </div>
+
+              {/* Form Inputs */}
+              <div className="space-y-3.5">
+                <input 
+                  type="email"
+                  placeholder="Enter email address"
+                  className="w-full h-13 px-4 rounded-full bg-neutral-900/90 border border-neutral-800 text-sm focus:outline-none focus:border-[#9fe800] transition-colors"
+                />
+                
+                <div className="relative">
+                  <input 
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter password"
+                    className="w-full h-13 px-4 pr-11 rounded-full bg-neutral-900/90 border border-neutral-800 text-sm focus:outline-none focus:border-[#9fe800] transition-colors"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <div className="flex justify-between items-center text-xs px-1 text-neutral-400">
+                  <button 
+                    onClick={() => setShowSignUpSheet(true)}
+                    className="underline hover:text-white transition-colors"
+                  >
+                    Sign Up
+                  </button>
+                  <button 
+                    onClick={() => showToast('Password reset link sent to registered email', 'info')}
+                    className="hover:text-white transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => {
+                    showToast('Logged in successfully', 'success');
+                    setCurrentScreen('HOME');
+                  }}
+                  className="w-full h-12 bg-[#a3e635] text-black font-semibold rounded-full mt-2 hover:bg-[#84cc16] active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(163,230,53,0.3)]"
+                >
+                  Log in
+                </button>
+
+                <label className="flex items-center space-x-2 text-[11px] text-neutral-500 cursor-pointer pt-1">
+                  <input type="checkbox" defaultChecked className="rounded accent-[#a3e635] bg-neutral-900 border-neutral-700" />
+                  <span>I agree to the <span className="underline">Terms of Service & Privacy Policy</span></span>
+                </label>
+              </div>
+
+              {/* Third Party Login Buttons */}
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-1 h-[1px] bg-neutral-800" />
+                  <span className="text-xs text-neutral-600 font-medium">or</span>
+                  <div className="flex-1 h-[1px] bg-neutral-800" />
+                </div>
+
+                <button 
+                  onClick={() => handleThirdPartyAuth('Apple')}
+                  className="w-full h-12 rounded-full border border-neutral-700/80 bg-neutral-900/50 flex items-center justify-center space-x-2 text-xs font-medium hover:bg-neutral-800 transition-colors"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
+                    <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.85-8.1-12.48-15.06-6.19-9.35-11.02-20.08-14.49-32.2-3.47-12.12-5.21-23.51-5.21-34.17 0-15.52 3.86-28.09 11.59-37.71 7.73-9.62 17.5-14.51 29.31-14.67 4.7 0 9.87 1.15 15.51 3.44 5.64 2.29 9.38 3.5 11.22 3.64 1.48-.14 5.4-1.41 11.77-3.81 6.37-2.4 11.83-3.44 16.39-3.12 12.08.64 21.84 5.16 29.28 13.56-10.59 6.43-15.78 15.42-15.57 26.97.22 9.04 3.68 16.71 10.38 23.01 6.7 6.3 14.69 10.02 23.97 11.16-2.02 6.09-4.52 12.44-7.51 19.06zM119.22 33.15c0-7.23 2.63-14.04 7.89-20.43 5.26-6.39 11.77-10.46 19.53-12.22-.11 1.28-.21 2.34-.32 3.18-.53 6.9-3.32 13.5-8.38 19.8-5.06 6.3-11.53 10.29-19.41 11.97-.22-.75-.31-1.52-.31-2.3z" />
+                  </svg>
+                  <span>Continue with Apple</span>
+                </button>
+
+                <button 
+                  onClick={() => handleThirdPartyAuth('Google')}
+                  className="w-full h-12 rounded-full border border-neutral-700/80 bg-neutral-900/50 flex items-center justify-center space-x-2 text-xs font-medium hover:bg-neutral-800 transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              SCREEN 1: STEP 1 - USERNAME & PASSWORD
+          ======================================================== */}
+          {currentScreen === 'STEP_USERNAME' && (
+            <div className="flex-1 flex flex-col justify-between px-6 pt-2 pb-4">
+              <div>
+                <div className="flex items-center justify-between pb-3">
+                  <button 
+                    onClick={() => setCurrentScreen('LOGIN')}
+                    className="p-1 -ml-1 text-white hover:text-[#9fe800]"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <span className="text-sm font-semibold tracking-wide">Sign Up</span>
+                  <div className="w-6" />
+                </div>
+
+                {/* Progress bar: Step 1 of 3 (33%) */}
+                <div className="w-full bg-neutral-800 h-1 rounded-full mb-8 overflow-hidden">
+                  <div className="bg-[#a3e635] h-full w-1/3 transition-all duration-300" />
+                </div>
+
+                <h1 className="text-2xl font-bold tracking-tight mb-6">Create a username</h1>
+
+                <div className="space-y-4">
+                  <div>
+                    <input 
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="username"
+                      className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 text-sm focus:outline-none focus:border-[#a3e635] transition-colors"
+                    />
+                    <div className="mt-2 text-[11px] text-neutral-400 space-y-0.5 px-1">
+                      <p className={username.length >= 3 && username.length <= 15 ? "text-lime-400" : ""}>
+                        • Must be within 3-15 characters
+                      </p>
+                      <p className={(username.match(/[a-zA-Z]/g) || []).length >= 3 ? "text-lime-400" : ""}>
+                        • Must contain at least 3 letters
+                      </p>
+                      <p className={username && /^[a-zA-Z0-9]+$/.test(username) ? "text-lime-400" : ""}>
+                        • Only letters and numbers allowed (case-insensitive)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Password (6-20 characters)"
+                      className="w-full h-13 px-4 pr-11 rounded-xl bg-neutral-950 border border-neutral-800 text-sm focus:outline-none focus:border-[#a3e635] transition-colors"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-300"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleUsernameNext}
+                className={`w-full h-12 rounded-full font-semibold text-sm transition-all shadow-md ${
+                  username.length >= 3 && password.length >= 6
+                    ? 'bg-[#a3e635] text-black hover:bg-[#84cc16]'
+                    : 'bg-neutral-600 text-neutral-300'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* ========================================================
+              SCREEN 2: STEP 2 - AVATAR, NICKNAME & COUNTRY
+          ======================================================== */}
+          {currentScreen === 'STEP_PROFILE' && (
+            <div className="flex-1 flex flex-col justify-between px-6 pt-2 pb-4">
+              <div>
+                <div className="flex items-center justify-between pb-3">
+                  <button 
+                    onClick={() => setCurrentScreen('STEP_USERNAME')}
+                    className="p-1 -ml-1 text-white hover:text-[#9fe800]"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <span className="text-sm font-semibold tracking-wide">Sign Up</span>
+                  <div className="w-6" />
+                </div>
+
+                {/* Progress bar: Step 2 of 3 (66%) */}
+                <div className="w-full bg-neutral-800 h-1 rounded-full mb-6 overflow-hidden">
+                  <div className="bg-[#a3e635] h-full w-2/3 transition-all duration-300" />
+                </div>
+
+                {/* Avatar Picker Icon */}
+                <div className="flex flex-col items-center justify-center mb-6">
+                  <div 
+                    onClick={() => setShowAvatarPickerModal(true)}
+                    className="w-24 h-24 rounded-full border-2 border-[#a3e635] p-1 cursor-pointer relative group flex items-center justify-center overflow-hidden bg-neutral-900 transition-transform active:scale-95"
+                  >
+                    {customAvatarUrl ? (
+                      <img src={customAvatarUrl} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                    ) : (
+                      <div 
+                        className="w-full h-full rounded-full flex items-center justify-center transition-colors"
+                        style={{ backgroundColor: selectedAvatar.bg }}
+                      >
+                        <Camera className="w-8 h-8 text-black" />
+                      </div>
+                    )}
+                    <div className="absolute bottom-1 right-1 bg-black/80 rounded-full p-1 border border-neutral-700">
+                      <Camera className="w-3 h-3 text-[#a3e635]" />
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-neutral-400 mt-2">Tap to customize avatar</span>
+                </div>
+
+                <h1 className="text-2xl font-bold tracking-tight mb-5">What's your name?</h1>
+
+                <div className="space-y-3">
+                  <div className="relative">
+                    <input 
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Display Name"
+                      className="w-full h-13 px-4 pr-10 rounded-xl bg-neutral-950 border border-neutral-800 text-sm focus:outline-none focus:border-[#a3e635] transition-colors font-medium"
+                    />
+                    {displayName && (
+                      <button 
+                        onClick={() => setDisplayName('')}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Recommendation pills */}
+                  <div className="flex items-center space-x-2 pt-1">
+                    {recommendations.slice(0, 2).map((rec, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setDisplayName(rec)}
+                        className={`text-xs px-3.5 py-1.5 rounded-full border transition-all ${
+                          displayName === rec 
+                            ? 'bg-[#a3e635]/20 border-[#a3e635] text-[#a3e635]' 
+                            : 'bg-neutral-900 border-neutral-800 text-neutral-300 hover:border-neutral-700'
+                        }`}
+                      >
+                        {rec}
+                      </button>
+                    ))}
+                    <button 
+                      onClick={handleRefreshRecommendations}
+                      title="Generate new recommendations"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-white bg-neutral-900 border border-neutral-800 hover:rotate-180 transition-all duration-300"
+                    >
+                      <RotateCw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Country Selector (Mandatory) */}
+                  <div className="pt-2">
+                    <button 
+                      type="button"
+                      onClick={() => setShowCountryModal(true)}
+                      className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-between text-sm hover:border-neutral-700 transition-colors"
+                    >
+                      <span className="text-neutral-400">Country/Region</span>
+                      <div className="flex items-center space-x-2">
+                        <span className={country ? "text-white font-medium" : "text-neutral-600"}>
+                          {country || "Select"}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-neutral-500" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                onClick={handleProfileNext}
+                className={`w-full h-12 rounded-full font-semibold text-sm transition-all shadow-md ${
+                  displayName.trim() && country 
+                    ? 'bg-[#a3e635] text-black hover:bg-[#84cc16]' 
+                    : 'bg-neutral-600 text-neutral-300'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* ========================================================
+              SCREEN 2-ALT: THIRD-PARTY DEDICATED COUNTRY SELECTOR
+          ======================================================== */}
+          {currentScreen === 'STEP_THIRD_PARTY_COUNTRY' && (
+            <div className="flex-1 flex flex-col justify-between px-6 pt-2 pb-4">
+              <div>
+                <div className="flex items-center justify-between pb-3">
+                  <button 
+                    onClick={() => setCurrentScreen('LOGIN')}
+                    className="p-1 -ml-1 text-white hover:text-[#9fe800]"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <span className="text-sm font-semibold tracking-wide">Sign Up</span>
+                  <div className="w-6" />
+                </div>
+
+                <div className="w-full bg-neutral-800 h-1 rounded-full mb-8 overflow-hidden">
+                  <div className="bg-[#a3e635] h-full w-1/2 transition-all duration-300" />
+                </div>
+
+                <h1 className="text-2xl font-bold tracking-tight mb-8">
+                  Please select your country/region.
+                </h1>
+
+                <button 
+                  type="button"
+                  onClick={() => setShowCountryModal(true)}
+                  className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-between text-sm hover:border-neutral-700 transition-colors"
+                >
+                  <span className="text-neutral-400">Country/Region</span>
+                  <div className="flex items-center space-x-2">
+                    <span className={country ? "text-white font-medium" : "text-neutral-600"}>
+                      {country || "Select"}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-neutral-500" />
+                  </div>
+                </button>
+              </div>
+
+              <button 
+                onClick={handleThirdPartyCountryNext}
+                className={`w-full h-12 rounded-full font-semibold text-sm transition-all shadow-md ${
+                  country 
+                    ? 'bg-[#a3e635] text-black hover:bg-[#84cc16]' 
+                    : 'bg-neutral-600 text-neutral-300'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* ========================================================
+              SCREEN 3: STEP 3 - FITNESS & BODY STATS
+          ======================================================== */}
+          {currentScreen === 'STEP_FITNESS' && (
+            <div className="flex-1 flex flex-col justify-between px-6 pt-2 pb-4">
+              <div>
+                <div className="flex items-center justify-between pb-3">
+                  <button 
+                    onClick={() => {
+                      if (isSocialAuth) {
+                        setCurrentScreen('STEP_THIRD_PARTY_COUNTRY');
+                      } else {
+                        setCurrentScreen('STEP_PROFILE');
+                      }
+                    }}
+                    className="p-1 -ml-1 text-white hover:text-[#9fe800]"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <span className="text-sm font-semibold tracking-wide">Sign Up</span>
+                  <div className="w-6" />
+                </div>
+
+                {/* Progress bar: Step 3 of 3 (100%) */}
+                <div className="w-full bg-neutral-800 h-1 rounded-full mb-6 overflow-hidden">
+                  <div className="bg-[#a3e635] h-full w-full transition-all duration-300" />
+                </div>
+
+                <h1 className="text-2xl font-bold tracking-tight mb-2">
+                  Let us help you track and manage your fitness data!
+                </h1>
+                
+                <div className="bg-neutral-900/90 border border-lime-500/30 rounded-2xl p-3.5 mb-6 flex items-start space-x-3">
+                  <Info className="w-4 h-4 text-[#a3e635] shrink-0 mt-0.5" />
+                  <p className="text-[12px] text-neutral-300 leading-relaxed">
+                    Accurate body metrics help calibrate calorie expenditure, heart rate zones, and step length for precision tracking.
+                  </p>
+                </div>
+
+                {/* Metric Pickers Triggers */}
+                <div className="space-y-3">
+                  {/* Gender */}
+                  <button 
+                    onClick={() => setActivePicker('gender')}
+                    className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-between text-sm hover:border-neutral-700 transition-colors"
+                  >
+                    <span className="text-neutral-400">Gender</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={fitnessData.gender ? "text-white font-semibold" : "text-neutral-600"}>
+                        {fitnessData.gender || 'Select'}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-neutral-500" />
+                    </div>
+                  </button>
+
+                  {/* Date of Birth */}
+                  <button 
+                    onClick={() => setActivePicker('dob')}
+                    className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-between text-sm hover:border-neutral-700 transition-colors"
+                  >
+                    <span className="text-neutral-400">Date of Birth</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={fitnessData.dob ? "text-white font-semibold" : "text-neutral-600"}>
+                        {fitnessData.dob || 'Select'}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-neutral-500" />
+                    </div>
+                  </button>
+
+                  {/* Height */}
+                  <button 
+                    onClick={() => setActivePicker('height')}
+                    className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-between text-sm hover:border-neutral-700 transition-colors"
+                  >
+                    <span className="text-neutral-400">Height</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={fitnessData.height ? "text-white font-semibold" : "text-neutral-600"}>
+                        {fitnessData.height || 'Select'}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-neutral-500" />
+                    </div>
+                  </button>
+
+                  {/* Weight */}
+                  <button 
+                    onClick={() => setActivePicker('weight')}
+                    className="w-full h-13 px-4 rounded-xl bg-neutral-950 border border-neutral-800 flex items-center justify-between text-sm hover:border-neutral-700 transition-colors"
+                  >
+                    <span className="text-neutral-400">Weight</span>
+                    <div className="flex items-center space-x-2">
+                      <span className={fitnessData.weight ? "text-white font-semibold" : "text-neutral-600"}>
+                        {fitnessData.weight || 'Select'}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-neutral-500" />
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="flex items-center space-x-3 pt-4">
+                <button 
+                  onClick={() => handleCompleteSignUp(true)}
+                  className="flex-1 h-12 rounded-full border border-neutral-800 text-sm font-semibold text-neutral-300 hover:bg-neutral-900 transition-colors"
+                >
+                  Skip
+                </button>
+                <button 
+                  onClick={() => handleCompleteSignUp(false)}
+                  className="flex-1 h-12 rounded-full bg-[#a3e635] text-black font-semibold text-sm hover:bg-[#84cc16] transition-colors shadow-[0_4px_16px_rgba(163,230,53,0.3)]"
+                >
+                  Sign Up
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              SCREEN 4: APP HOME DASHBOARD (Matching image_f5a603.jpg)
+          ======================================================== */}
+          {currentScreen === 'HOME' && (
+            <div className="absolute inset-0 z-10 bg-black flex flex-col justify-between overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none">
+                <img 
+                  src="https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?auto=format&fit=crop&w=800&q=80" 
+                  alt="Boxing Workout" 
+                  className="w-full h-full object-cover opacity-90 scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-black/60" />
+              </div>
+
+              {/* Top Status & Challenge Bar */}
+              <div className="relative z-20 pt-10 px-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 mr-2 bg-neutral-900/80 backdrop-blur-md border border-neutral-700/60 rounded-2xl px-3.5 py-1.5 flex items-center justify-between text-xs">
+                    <span className="text-white/90 font-medium truncate max-w-[190px]">
+                      The May '26 Speed King Challe...
+                    </span>
+                    <div className="flex items-center space-x-1 shrink-0 pl-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                      <span className="text-[11px] text-neutral-300 font-medium">Online</span>
+                      <span className="text-[11px] text-neutral-400">3</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setCurrentScreen('LOGIN');
+                      showToast('Returned to login screen for testing', 'info');
+                    }}
+                    title="Log Out / Reset"
+                    className="w-9 h-9 rounded-xl bg-neutral-900/80 backdrop-blur-md border border-neutral-700/60 flex items-center justify-center text-white/90 hover:text-[#a3e635] transition-colors"
+                  >
+                    <SquarePen className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Score & Timer Badge */}
+                <div className="flex justify-center mt-3">
+                  <div className="bg-black/60 backdrop-blur-md border border-neutral-700/50 rounded-2xl px-4 py-1.5 flex items-center space-x-4 shadow-xl">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-5 h-4 bg-rose-600 rounded flex items-center justify-center text-[10px] text-white">
+                        🥊
+                      </div>
+                      <div className="w-3 h-3 rounded-full bg-[#a3e635] shadow-[0_0_6px_#a3e635]" />
+                      <span className="text-xl font-black text-white tracking-wider">12</span>
+                    </div>
+                    <div className="h-4 w-[1px] bg-neutral-700" />
+                    <span className="text-xl font-mono font-bold text-white tracking-wider">10:00</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Controls */}
+              <div className="relative z-20 flex-1 flex justify-end items-end px-4 pb-2">
+                <div className="flex flex-col items-center space-y-4 mb-2">
+                  <div className="relative mb-1">
+                    <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-neutral-800 shadow-lg">
+                      <img 
+                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" 
+                        alt="Creator" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="absolute -bottom-1 -left-1 w-5 h-3.5 rounded-xs overflow-hidden border border-white/80 shadow">
+                      <svg viewBox="0 0 7410 3900" className="w-full h-full">
+                        <rect width="7410" height="3900" fill="#b22234"/>
+                        <path d="M0,450H7410M0,1050H7410M0,1650H7410M0,2250H7410M0,2850H7410M0,3450H7410" stroke="#fff" strokeWidth="300"/>
+                        <rect width="2964" height="2100" fill="#3c3b6e"/>
+                      </svg>
+                    </div>
+                    <button className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#a3e635] text-black flex items-center justify-center font-bold text-xs shadow hover:scale-110 transition-transform">
+                      <Plus className="w-3 h-3 stroke-[3]" />
+                    </button>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setIsLiked(!isLiked);
+                      showToast(isLiked ? 'Unliked' : 'Liked post!', 'success');
+                    }}
+                    className="flex flex-col items-center group cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-xs group-hover:scale-110 transition-transform">
+                      <Heart className={`w-7 h-7 drop-shadow-md ${isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}`} />
+                    </div>
+                    <span className="text-[11px] font-medium text-white/95 mt-0.5 shadow-xs">Like</span>
+                  </button>
+
+                  <button 
+                    onClick={() => showToast('Comments section opened', 'info')}
+                    className="flex flex-col items-center group cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-xs group-hover:scale-110 transition-transform">
+                      <MessageSquare className="w-7 h-7 text-white drop-shadow-md" />
+                    </div>
+                    <span className="text-[11px] font-medium text-white/95 mt-0.5 shadow-xs">Comment</span>
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      setIsSaved(!isSaved);
+                      showToast(isSaved ? 'Removed from saved' : 'Saved to favorites', 'success');
+                    }}
+                    className="flex flex-col items-center group cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-xs group-hover:scale-110 transition-transform">
+                      <Bookmark className={`w-7 h-7 drop-shadow-md ${isSaved ? 'text-amber-400 fill-amber-400' : 'text-white'}`} />
+                    </div>
+                    <span className="text-[11px] font-medium text-white/95 mt-0.5 shadow-xs">Save</span>
+                  </button>
+
+                  <button 
+                    onClick={() => showToast('Share link copied to clipboard', 'success')}
+                    className="flex flex-col items-center group cursor-pointer"
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-black/30 backdrop-blur-xs group-hover:scale-110 transition-transform">
+                      <Share2 className="w-7 h-7 text-white drop-shadow-md" />
+                    </div>
+                    <span className="text-[11px] font-medium text-white/95 mt-0.5 shadow-xs">Share</span>
+                  </button>
+
+                  <button 
+                    onClick={() => showToast('Options: Report, Mute, QR Code', 'info')}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white/90 hover:text-white"
+                  >
+                    <MoreVertical className="w-6 h-6 drop-shadow-md" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Bottom Caption Overlay */}
+              <div className="relative z-20 px-4 pb-2 space-y-1.5">
+                <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#9fe800] to-[#00f2fe] text-black font-extrabold text-[11px] px-3 py-1 rounded-full shadow-[0_0_12px_rgba(159,232,0,0.4)]">
+                  <div className="flex items-center space-x-1">
+                    <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>5 SEC MAX</span>
+                  </div>
+                  <span className="text-black/40 font-normal">|</span>
+                  <div className="flex items-center">
+                    <span>WEEK #123</span>
+                    <ChevronRight className="w-3.5 h-3.5 stroke-[3] ml-0.5" />
+                  </div>
+                </div>
+
+                <div className="text-base font-bold text-white tracking-tight flex items-center space-x-1">
+                  <span>@{displayName || username || 'RyanG'}</span>
+                </div>
+
+                <div className="flex items-center space-x-1.5 text-xs text-white/90">
+                  <span className="w-4 h-4 rounded-full bg-emerald-500 text-black flex items-center justify-center text-[10px] font-bold">✓</span>
+                  <span className="font-semibold">26 hits in 10 seconds</span>
+                </div>
+
+                <p className="text-xs text-white/80 leading-relaxed pr-12">
+                  Your team is global. Your payments should be too. Your team is global.
+                  <button 
+                    onClick={() => setShowFullCaption(!showFullCaption)}
+                    className="text-[#a3e635] ml-1.5 font-medium hover:underline inline-block"
+                  >
+                    {showFullCaption ? 'hide' : 'less'}
+                  </button>
+                </p>
+
+                <div className="flex items-center space-x-3 text-[11px] text-white/60 pt-0.5">
+                  <span>2025-01-04</span>
+                  <div className="flex items-center space-x-1">
+                    <MapPin className="w-3 h-3 text-white/70" />
+                    <span className="truncate max-w-[200px]">456 Innovation Drive, Suite...</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Tab Bar */}
+              <div className="relative z-30 bg-black/95 border-t border-neutral-800/80 px-6 pt-2 pb-5 flex items-center justify-between">
+                <button className="flex flex-col items-center text-white">
+                  <Home className="w-6 h-6 stroke-[2.4]" />
+                </button>
+                <button 
+                  onClick={() => showToast('Stats view opened', 'info')}
+                  className="flex flex-col items-center text-neutral-400 hover:text-white transition-colors"
+                >
+                  <BarChart2 className="w-6 h-6 stroke-[2]" />
+                </button>
+                <button 
+                  onClick={() => showToast('Speed challenge started! Ready... 3, 2, 1 🥊', 'success')}
+                  className="w-12 h-12 rounded-full border border-neutral-500 bg-neutral-900 flex items-center justify-center text-white font-extrabold text-[10px] tracking-wider hover:border-[#a3e635] hover:text-[#a3e635] active:scale-95 transition-all shadow-md"
+                >
+                  PLAY
+                </button>
+                <button 
+                  onClick={() => showToast('4 unread direct messages', 'info')}
+                  className="flex flex-col items-center text-neutral-400 hover:text-white transition-colors relative"
+                >
+                  <MessageSquare className="w-6 h-6 stroke-[2]" />
+                  <span className="absolute -top-1 -right-1.5 bg-rose-600 text-white font-bold text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-black">
+                    4
+                  </span>
+                </button>
+                <button 
+                  onClick={() => {
+                    setCurrentScreen('STEP_PROFILE');
+                    showToast('Editing profile', 'info');
+                  }}
+                  className="flex flex-col items-center text-neutral-400 hover:text-white transition-colors"
+                >
+                  <User className="w-6 h-6 stroke-[2]" />
+                </button>
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+        {/* ========================================================
+            MODAL 1: BOTTOM SIGN UP SHEET (From Login Screen)
+        ======================================================== */}
+        {showSignUpSheet && (
+          <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end">
+            <div className="bg-white text-black rounded-t-[36px] px-6 pt-5 pb-7 max-h-[90%] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-base font-bold">Sign Up</span>
+                <button 
+                  onClick={() => setShowSignUpSheet(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-neutral-800 hover:bg-neutral-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <h2 className="text-xl font-bold tracking-tight mb-5">Create your On account</h2>
+
+              <div className="mb-4">
+                <label className="text-xs text-neutral-500 font-medium block mb-1">Email</label>
+                <div className="relative">
+                  <input 
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full py-2 border-b border-neutral-300 text-sm focus:outline-none focus:border-black font-medium pr-8"
+                  />
+                  {email && email.includes('@') && (
+                    <Check className="w-4 h-4 text-emerald-600 absolute right-1 top-1/2 -translate-y-1/2" />
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="text-xs text-neutral-500 font-medium block mb-1">code</label>
+                <div className="flex items-center justify-between border-b border-neutral-300">
+                  <input 
+                    type="text"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    placeholder="6-digit code"
+                    className="w-1/2 py-2 text-sm tracking-wider font-semibold focus:outline-none"
+                  />
+                  <button 
+                    type="button"
+                    onClick={handleSendCode}
+                    disabled={countdown > 0}
+                    className={`text-xs font-semibold ${
+                      countdown > 0 
+                        ? 'text-neutral-400 cursor-not-allowed' 
+                        : 'text-[#4d7c0f] hover:text-[#3f6212]'
+                    }`}
+                  >
+                    {countdown > 0 ? `Send Code (${countdown})` : 'Send Code'}
+                  </button>
+                </div>
+                {codeSent && (
+                  <span className="text-[10px] text-neutral-400 mt-1 block">
+                    Hint: Use code <strong className="text-neutral-700">212145</strong> or <strong className="text-neutral-700">123456</strong>
+                  </span>
+                )}
+              </div>
+
+              <label className="flex items-start space-x-2.5 text-[11px] text-neutral-700 cursor-pointer mb-2">
+                <input 
+                  type="checkbox" 
+                  checked={agreedToTerms} 
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="rounded mt-0.5 accent-black" 
+                />
+                <span className="font-semibold">Sign up for email updates from TekXYZ</span>
+              </label>
+
+              <p className="text-[10px] text-neutral-500 mb-6 pl-6">
+                I agree to the <span className="underline">Terms of Service & Privacy Policy</span>
+              </p>
+
+              <button 
+                onClick={handleVerifyAndContinue}
+                className={`w-full h-12 rounded-full font-semibold text-sm transition-all mb-4 ${
+                  email && code 
+                    ? 'bg-[#a3e635] text-black hover:bg-[#84cc16]' 
+                    : 'bg-neutral-300 text-neutral-600'
+                }`}
+              >
+                Continue
+              </button>
+
+              <div className="space-y-2.5 pt-1">
+                <button 
+                  onClick={() => handleThirdPartyAuth('Apple')}
+                  className="w-full h-11 rounded-full border border-neutral-300 flex items-center justify-center space-x-2 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 transition-colors"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
+                    <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.08-7.85-8.1-12.48-15.06-6.19-9.35-11.02-20.08-14.49-32.2-3.47-12.12-5.21-23.51-5.21-34.17 0-15.52 3.86-28.09 11.59-37.71 7.73-9.62 17.5-14.51 29.31-14.67 4.7 0 9.87 1.15 15.51 3.44 5.64 2.29 9.38 3.5 11.22 3.64 1.48-.14 5.4-1.41 11.77-3.81 6.37-2.4 11.83-3.44 16.39-3.12 12.08.64 21.84 5.16 29.28 13.56-10.59 6.43-15.78 15.42-15.57 26.97.22 9.04 3.68 16.71 10.38 23.01 6.7 6.3 14.69 10.02 23.97 11.16-2.02 6.09-4.52 12.44-7.51 19.06z" />
+                  </svg>
+                  <span>Continue with Apple</span>
+                </button>
+
+                <button 
+                  onClick={() => handleThirdPartyAuth('Google')}
+                  className="w-full h-11 rounded-full border border-neutral-300 flex items-center justify-center space-x-2 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            MODAL 2: SEARCHABLE COUNTRY SELECTOR SHEET
+        ======================================================== */}
+        {showCountryModal && (
+          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-xs flex flex-col justify-end">
+            <div className="bg-white text-black rounded-t-[36px] pt-4 pb-6 h-[85%] flex flex-col animate-in slide-in-from-bottom duration-300">
+              <div className="flex items-center justify-between px-6 mb-3">
+                <button 
+                  onClick={() => setShowCountryModal(false)}
+                  className="w-7 h-7 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-300"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="w-10 h-1 bg-neutral-300 rounded-full" />
+                <div className="w-7" />
+              </div>
+
+              <div className="px-6 mb-3">
+                <div className="flex items-center bg-neutral-100 rounded-2xl px-3 py-2 border border-neutral-200">
+                  <Search className="w-4 h-4 text-neutral-400 mr-2 shrink-0" />
+                  <input 
+                    type="text"
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    placeholder="Search"
+                    className="w-full bg-transparent text-sm focus:outline-none"
+                  />
+                  {countrySearch && (
+                    <button onClick={() => setCountrySearch('')}>
+                      <X className="w-3.5 h-3.5 text-neutral-400" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 divide-y divide-neutral-100">
+                {filteredCountries.map((c) => {
+                  const isSelected = country === c;
+                  return (
+                    <div 
+                      key={c}
+                      onClick={() => {
+                        setCountry(c);
+                        setShowCountryModal(false);
+                      }}
+                      className="py-3.5 flex items-center justify-between cursor-pointer hover:bg-neutral-50 transition-colors"
+                    >
+                      <span className="text-sm font-medium text-neutral-800">{c}</span>
+                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                        isSelected 
+                          ? 'border-blue-600 bg-blue-600 text-white' 
+                          : 'border-neutral-300'
+                      }`}>
+                        {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                      </div>
+                    </div>
+                  );
+                })}
+                {filteredCountries.length === 0 && (
+                  <div className="text-center py-10 text-neutral-400 text-sm">
+                    No countries matching "{countrySearch}"
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            MODAL 3: AVATAR PICKER SHEET
+        ======================================================== */}
+        {showAvatarPickerModal && (
+          <div className="absolute inset-0 z-50 bg-black/70 backdrop-blur-xs flex flex-col justify-end">
+            <div className="bg-neutral-900 border-t border-neutral-800 text-white rounded-t-[32px] px-6 pt-5 pb-7 animate-in slide-in-from-bottom duration-300">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm font-semibold">Select Avatar</span>
+                <button onClick={() => setShowAvatarPickerModal(false)} className="text-neutral-400 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-5">
+                <button 
+                  onClick={() => handleSelectMockPhoto('camera')}
+                  className="flex flex-col items-center justify-center p-4 rounded-2xl bg-neutral-800 border border-neutral-700/60 hover:border-[#a3e635] transition-all"
+                >
+                  <Camera className="w-6 h-6 text-[#a3e635] mb-1.5" />
+                  <span className="text-xs font-medium">Take Photo</span>
+                </button>
+
+                <button 
+                  onClick={() => handleSelectMockPhoto('album')}
+                  className="flex flex-col items-center justify-center p-4 rounded-2xl bg-neutral-800 border border-neutral-700/60 hover:border-[#a3e635] transition-all"
+                >
+                  <ImageIcon className="w-6 h-6 text-[#a3e635] mb-1.5" />
+                  <span className="text-xs font-medium">Choose from Album</span>
+                </button>
+              </div>
+
+              <span className="text-xs text-neutral-400 block mb-2 font-medium">Or choose a preset:</span>
+              <div className="flex justify-around items-center pt-1 pb-3">
+                {AVATAR_OPTIONS.map((opt) => (
+                  <div 
+                    key={opt.id}
+                    onClick={() => {
+                      setSelectedAvatar(opt);
+                      setCustomAvatarUrl(null);
+                      setShowAvatarPickerModal(false);
+                      showToast(`Selected ${opt.label} avatar`, 'success');
+                    }}
+                    className={`w-12 h-12 rounded-full cursor-pointer flex items-center justify-center transition-transform hover:scale-105 ${
+                      selectedAvatar.id === opt.id && !customAvatarUrl
+                        ? 'ring-2 ring-[#a3e635] ring-offset-2 ring-offset-neutral-900' 
+                        : ''
+                    }`}
+                    style={{ backgroundColor: opt.bg }}
+                  >
+                    <User className="w-5 h-5 text-black" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            MODAL 4: FITNESS WHEEL PICKERS (HEIGHT, WEIGHT, DOB, GENDER)
+        ======================================================== */}
+        {activePicker && (
+          <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex flex-col justify-end">
+            <div className="bg-white text-black rounded-t-[36px] px-6 pt-5 pb-6 animate-in slide-in-from-bottom duration-300">
+              
+              {/* Header with Title and Skip */}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-base font-bold text-neutral-900">
+                  {activePicker === 'height' && 'Select your height'}
+                  {activePicker === 'weight' && 'Select your weight'}
+                  {activePicker === 'dob' && 'Date of Birth'}
+                  {activePicker === 'gender' && 'Select your gender'}
+                </span>
+                <button 
+                  onClick={() => setActivePicker(null)}
+                  className="text-xs text-blue-600 font-semibold hover:underline"
+                >
+                  Skip
+                </button>
+              </div>
+
+              <p className="text-[11px] text-neutral-500 mb-3">
+                This helps us personalize your fitness targets. Your data stays private and secure.
+              </p>
+
+              {/* 1. HEIGHT PICKER: Dual Mode (cm or ft/in) with Scroll Wheels */}
+              {activePicker === 'height' && (
+                <div className="py-2">
+                  {/* Unit Segmented Control Pill matching mockups */}
+                  <div className="flex bg-neutral-100 p-1 rounded-full mb-3 text-xs font-semibold border border-neutral-200">
+                    <button 
+                      onClick={() => setHeightUnit('cm')}
+                      className={`flex-1 py-1.5 rounded-full transition-all duration-200 ${
+                        heightUnit === 'cm' 
+                          ? 'bg-white shadow-sm text-black font-bold' 
+                          : 'text-neutral-500 hover:text-neutral-800'
+                      }`}
+                    >
+                      cm
+                    </button>
+                    <button 
+                      onClick={() => setHeightUnit('ft/in')}
+                      className={`flex-1 py-1.5 rounded-full transition-all duration-200 ${
+                        heightUnit === 'ft/in' 
+                          ? 'bg-white shadow-sm text-black font-bold' 
+                          : 'text-neutral-500 hover:text-neutral-800'
+                      }`}
+                    >
+                      ft / in
+                    </button>
+                  </div>
+
+                  {/* Wheel container based on chosen unit */}
+                  {heightUnit === 'cm' ? (
+                    <div className="flex justify-center">
+                      <WheelPicker 
+                        items={cmList}
+                        selectedValue={selectedCm}
+                        onValueChange={(val) => setSelectedCm(val)}
+                        labelSuffix="cm"
+                        width="w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex justify-center items-center space-x-2">
+                      <WheelPicker 
+                        items={ftList}
+                        selectedValue={selectedFt}
+                        onValueChange={(val) => setSelectedFt(val)}
+                        labelSuffix="ft"
+                        width="w-1/2"
+                      />
+                      <WheelPicker 
+                        items={inList}
+                        selectedValue={selectedIn}
+                        onValueChange={(val) => setSelectedIn(val)}
+                        labelSuffix="in"
+                        width="w-1/2"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 2. WEIGHT PICKER: Dual Mode (kg or lbs) with Scroll Wheels */}
+              {activePicker === 'weight' && (
+                <div className="py-2">
+                  {/* Segmented Control Pill */}
+                  <div className="flex bg-neutral-100 p-1 rounded-full mb-3 text-xs font-semibold border border-neutral-200">
+                    <button 
+                      onClick={() => setWeightUnit('kg')}
+                      className={`flex-1 py-1.5 rounded-full transition-all duration-200 ${
+                        weightUnit === 'kg' 
+                          ? 'bg-white shadow-sm text-black font-bold' 
+                          : 'text-neutral-500 hover:text-neutral-800'
+                      }`}
+                    >
+                      kg
+                    </button>
+                    <button 
+                      onClick={() => setWeightUnit('lbs')}
+                      className={`flex-1 py-1.5 rounded-full transition-all duration-200 ${
+                        weightUnit === 'lbs' 
+                          ? 'bg-white shadow-sm text-black font-bold' 
+                          : 'text-neutral-500 hover:text-neutral-800'
+                      }`}
+                    >
+                      lbs
+                    </button>
+                  </div>
+
+                  {/* Weight Wheel Picker */}
+                  <div className="flex justify-center">
+                    {weightUnit === 'kg' ? (
+                      <WheelPicker 
+                        items={kgList}
+                        selectedValue={selectedKg}
+                        onValueChange={(val) => setSelectedKg(val)}
+                        labelSuffix="kg"
+                        width="w-full"
+                      />
+                    ) : (
+                      <WheelPicker 
+                        items={lbsList}
+                        selectedValue={selectedLbs}
+                        onValueChange={(val) => setSelectedLbs(val)}
+                        labelSuffix="lbs"
+                        width="w-full"
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* 3. DATE OF BIRTH PICKER: Triple Column Wheel (Month, Day, Year) */}
+              {activePicker === 'dob' && (
+                <div className="py-2 flex justify-center items-center space-x-1">
+                  <WheelPicker 
+                    items={MONTHS}
+                    selectedValue={selectedMonth}
+                    onValueChange={(val) => setSelectedMonth(val)}
+                    width="w-1/3"
+                  />
+                  <WheelPicker 
+                    items={daysList}
+                    selectedValue={selectedDay}
+                    onValueChange={(val) => setSelectedDay(val)}
+                    width="w-1/3"
+                  />
+                  <WheelPicker 
+                    items={yearsList}
+                    selectedValue={selectedYear}
+                    onValueChange={(val) => setSelectedYear(val)}
+                    width="w-1/3"
+                  />
+                </div>
+              )}
+
+              {/* 4. GENDER PICKER: Vertical Wheel Picker */}
+              {activePicker === 'gender' && (
+                <div className="py-2 flex justify-center">
+                  <WheelPicker 
+                    items={genderList}
+                    selectedValue={selectedGender}
+                    onValueChange={(val) => setSelectedGender(val)}
+                    width="w-full"
+                  />
+                </div>
+              )}
+
+              {/* Confirmation Select Button */}
+              <button 
+                onClick={() => {
+                  if (activePicker === 'height') {
+                    const formatted = heightUnit === 'cm' 
+                      ? `${selectedCm} cm` 
+                      : `${selectedFt} ft ${selectedIn} in`;
+                    setFitnessData(prev => ({ ...prev, height: formatted }));
+                    showToast(`Height set to ${formatted}`, 'success');
+                  } else if (activePicker === 'weight') {
+                    const formatted = weightUnit === 'kg' 
+                      ? `${selectedKg} kg` 
+                      : `${selectedLbs} lbs`;
+                    setFitnessData(prev => ({ ...prev, weight: formatted }));
+                    showToast(`Weight set to ${formatted}`, 'success');
+                  } else if (activePicker === 'dob') {
+                    const dayPadded = String(selectedDay).padStart(2, '0');
+                    const formatted = `${selectedMonth} ${dayPadded}, ${selectedYear}`;
+                    setFitnessData(prev => ({ ...prev, dob: formatted }));
+                    showToast(`DOB set to ${formatted}`, 'success');
+                  } else if (activePicker === 'gender') {
+                    setFitnessData(prev => ({ ...prev, gender: selectedGender }));
+                    showToast(`Gender set to ${selectedGender}`, 'success');
+                  }
+                  setActivePicker(null);
+                }}
+                className="w-full h-12 bg-neutral-900 text-white font-semibold rounded-full text-sm mt-3 hover:bg-black active:scale-[0.99] transition-all shadow-md"
+              >
+                Select
+              </button>
+
+            </div>
+          </div>
+        )}
+
+        {/* iPhone Home Indicator */}
+        <div className="w-full flex justify-center pb-2 pt-1 pointer-events-none">
+          <div className="w-32 h-1 bg-neutral-700/80 rounded-full" />
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
