@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TekXYZ - 多语言管理（审核中心）</title>
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background-color: #f0f2f5;
+      color: #303133;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    /* 自定义滚动条样式，保持后台系统的精致感 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(144, 147, 153, 0.3);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(144, 147, 153, 0.5);
+    }
+
+    /* 侧边栏颜色还原 Element Admin 风格 */
+    .sidebar-bg {
+      background-color: #304156;
+    }
+    .submenu-bg {
+      background-color: #1f2d3d;
+    }
+    .menu-item:hover {
+      background-color: #263445;
+    }
+    .submenu-item:hover {
+      background-color: #001528;
+    }
+
+    /* 卡片与按钮微交互动画 */
+    .reason-card {
+      background-color: #f2f2f2;
+      transition: all 0.2s ease;
+    }
+    .reason-card:hover {
+      background-color: #ebebeb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 自定义违规原因特殊卡片样式 */
+    .reason-card-custom {
+      background-color: #f4f9ff;
+      border: 1px dashed #91caff;
+      transition: all 0.2s ease;
+    }
+    .reason-card-custom:hover {
+      background-color: #e6f4ff;
+      box-shadow: 0 2px 8px rgba(24, 144, 255, 0.08);
+    }
+
+    /* 拖拽状态反馈样式 */
+    .dragging-item {
+      opacity: 0.45;
+      transform: scale(0.98);
+    }
+    .drag-over-target {
+      outline: 2px dashed #1890ff !important;
+      outline-offset: 2px;
+      background-color: #e6f4ff !important;
+    }
+
+    .add-card-btn {
+      border: 1px solid #909399;
+      transition: all 0.2s ease;
+    }
+    .add-card-btn:hover {
+      border-color: #1890ff;
+      color: #1890ff;
+      background-color: #f0f7ff;
+    }
+
+    .add-custom-card-btn {
+      border: 1px dashed #1890ff;
+      color: #1890ff;
+      background-color: #f7fbff;
+      transition: all 0.2s ease;
+    }
+    .add-custom-card-btn:hover:not(:disabled) {
+      background-color: #e6f4ff;
+      border-color: #096dd9;
+      color: #096dd9;
+    }
+    .add-custom-card-btn:disabled {
+      border-color: #dcdfe6;
+      color: #a8abb2;
+      background-color: #f5f7fa;
+      cursor: not-allowed;
+    }
+
+    /* 弹窗过渡动画 */
+    @keyframes modalFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .modal-animate {
+      animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Toast 提示动画 */
+    @keyframes toastSlideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -16px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+    .toast-animate {
+      animation: toastSlideDown 0.25s ease forwards;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex select-none">
+
+  <!-- ==================== 1. 左侧深色主侧边栏 ==================== -->
+  <aside id="mainSidebar" class="sidebar-bg w-[210px] flex-shrink-0 h-full flex flex-col text-[#bfcbd9] text-[14px] transition-all duration-300 z-20">
+    <!-- 顶部 Logo 区域 -->
+    <div class="h-[50px] flex items-center px-4 bg-[#2b3648] border-b border-[#242e3d] flex-shrink-0">
+      <div class="flex items-center gap-2">
+        <!-- SVG 还原 TekXYZ 图标 -->
+        <svg class="w-7 h-7" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="15" stroke="#8cc63f" stroke-width="3" />
+          <path d="M12 12H24L13 24H24" stroke="#8cc63f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="text-[20px] font-extrabold tracking-tight text-[#8cc63f]">Tek<span class="text-[#7db936]">XYZ</span></span>
+      </div>
+    </div>
+
+    <!-- 侧边栏菜单列表 -->
+    <nav class="flex-1 overflow-y-auto py-1">
+      <!-- 排行榜 -->
+      <div class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span>排行榜</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+
+      <!-- 审核管理 -->
+      <div class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>审核管理</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+
+      <!-- 问卷调查 -->
+      <div class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span>问卷调查</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+
+      <!-- Quick Suggestion -->
+      <div class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          <span>Quick Suggestion</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+
+      <!-- 运营中心 -->
+      <div class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <span class="w-4 h-4 rounded-full bg-[#409eff] text-white text-[10px] flex items-center justify-center font-bold">运</span>
+          <span>运营中心</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+
+      <!-- 系统管理 -->
+      <div class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>系统管理</span>
+        </div>
+        <svg class="w-3.5 h-3.5 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </div>
+
+      <!-- 系统设置（默认展开） -->
+      <div>
+        <div onclick="toggleSystemSubmenu()" class="menu-item h-[50px] px-5 flex items-center justify-between cursor-pointer transition-colors text-[#f4f4f5]">
+          <div class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-[#909399]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            <span>系统设置</span>
+          </div>
+          <svg id="systemArrow" class="w-3.5 h-3.5 text-[#909399] transition-transform duration-200 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+
+        <!-- 子菜单列表 -->
+        <div id="systemSubmenu" class="submenu-bg py-1">
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">违规管理</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">视频教程</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">用户数设置</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">功能解锁次数</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">品牌管理</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">产品二维码批次</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">产品二维码详情</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">邀请码管理</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">AWS订单号管理</div>
+          <!-- 高亮激活项 -->
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] text-[#409eff] font-medium bg-[#1f2d3d]">多语言管理</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">内容管理</div>
+          <div class="submenu-item h-[44px] pl-11 pr-4 flex items-center cursor-pointer text-[13px] transition-colors">缺陷反馈</div>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ==================== 2. 右侧主内容区 ==================== -->
+  <div class="flex-1 flex flex-col min-w-0 h-full bg-white">
+    
+    <!-- 顶部面包屑导航栏 -->
+    <header class="h-[50px] px-4 flex items-center justify-between border-b border-[#e6e6e6] bg-white flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <!-- 汉堡折叠按钮 -->
+        <button onclick="toggleSidebar()" class="p-1.5 rounded hover:bg-gray-100 text-[#606266] transition-colors" title="折叠/展开菜单">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10"/></svg>
+        </button>
+        <!-- 面包屑 -->
+        <nav class="flex items-center text-[14px] text-[#97a8be] gap-2">
+          <span class="hover:text-[#409eff] cursor-pointer">dashboard</span>
+          <span>/</span>
+          <span class="hover:text-[#409eff] cursor-pointer">系统设置</span>
+          <span>/</span>
+          <span class="text-[#97a8be]">多语言管理</span>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 多标签页栏 (Tags View) -->
+    <div class="h-[34px] px-4 flex items-center gap-1.5 border-b border-[#d8dce5] bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.04)] flex-shrink-0">
+      <span class="px-2.5 h-[26px] flex items-center text-[12px] text-[#495060] border border-[#d8dce5] bg-white rounded-[2px] cursor-pointer hover:bg-gray-50">
+        首页
+      </span>
+      <span class="px-2.5 h-[26px] flex items-center gap-1.5 text-[12px] text-[#495060] border border-[#d8dce5] bg-white rounded-[2px] cursor-pointer hover:bg-gray-50">
+        消息记录
+        <span class="text-[11px] text-[#909399] hover:text-gray-700">×</span>
+      </span>
+      <span class="px-2.5 h-[26px] flex items-center gap-1.5 text-[12px] text-white bg-[#1890ff] border border-[#1890ff] rounded-[2px] cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-white inline-block"></span>
+        多语言管理
+        <span class="text-[11px] text-white/80 hover:text-white">×</span>
+      </span>
+    </div>
+
+    <!-- ==================== 3. 多语言配置核心工作台 ==================== -->
+    <main class="flex-1 flex min-h-0 overflow-hidden bg-white">
+      
+      <!-- 左侧语言选择栏 (宽 180px，带右侧微妙阴影分隔) -->
+      <div class="w-[180px] flex-shrink-0 border-r border-[#ebeef5] shadow-[2px_0_8px_rgba(0,0,0,0.03)] bg-white overflow-y-auto z-10">
+        <ul id="languageList" class="divide-y divide-[#f2f6fc]">
+          <!-- 语言列表由 JS 动态渲染 -->
+        </ul>
+      </div>
+
+      <!-- 右侧配置面板 -->
+      <div class="flex-1 flex flex-col min-w-0 overflow-y-auto px-6 py-4 bg-white">
+        
+        <!-- 顶部筛选栏：多语言分类（审核中心禁用状态） -->
+        <div class="flex items-center gap-3 mb-4 flex-shrink-0">
+          <label class="text-[14px] text-[#606266] font-normal">多语言分类</label>
+          <div class="relative w-[220px]">
+            <select id="categorySelect" disabled class="w-full h-[36px] px-3 pr-8 text-[14px] text-[#909399] bg-[#f5f7fa] border border-[#e4e7ed] rounded-[4px] appearance-none cursor-not-allowed select-none">
+              <option value="audit_center" selected>审核中心</option>
+            </select>
+            <svg class="w-4 h-4 text-[#c0c4cc] absolute right-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </div>
+          <span id="currentLangBadge" class="ml-2 px-2.5 py-0.5 text-[12px] rounded bg-[#ecf5ff] text-[#409eff] border border-[#d9ecff]">
+            当前编辑语言：中文-简体
+          </span>
+        </div>
+
+        <!-- 4个子 Tab 导航栏 -->
+        <div class="w-full border-b border-[#e4e7ed] flex items-center gap-10 mb-6 select-none overflow-x-auto flex-shrink-0">
+          <button onclick="switchTab('report_reasons')" id="tab-report_reasons" class="tab-btn relative pb-3 text-[14px] font-medium whitespace-nowrap transition-colors">
+            举报原因
+          </button>
+          <button onclick="switchTab('video_reject')" id="tab-video_reject" class="tab-btn relative pb-3 text-[14px] font-medium whitespace-nowrap transition-colors">
+            视频审核违规/不通过选项
+          </button>
+          <button onclick="switchTab('follow_reject')" id="tab-follow_reject" class="tab-btn relative pb-3 text-[14px] font-medium whitespace-nowrap transition-colors">
+            跟练视频审核不通过选项
+          </button>
+          <button onclick="switchTab('cocreate_reject')" id="tab-cocreate_reject" class="tab-btn relative pb-3 text-[14px] font-medium whitespace-nowrap transition-colors">
+            共创视频审核不通过选项
+          </button>
+        </div>
+
+        <!-- ==================== Tab 内容动态挂载容器 ==================== -->
+        <div id="tabContentArea" class="w-full flex-1">
+          <!-- 由 JS 根据当前语言 & 当前 Tab 渲染 -->
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== 4. 新增 / 编辑审核原因模态弹窗（还原图2） ==================== -->
+  <div id="reasonModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-[1px] p-4">
+    <div class="bg-white w-full max-w-[460px] rounded-[2px] shadow-xl p-6 relative modal-animate">
+      <!-- 右上角关闭按钮 -->
+      <button onclick="closeReasonModal()" class="absolute right-5 top-4 text-[#303133] hover:text-[#409eff] transition-colors p-1" title="关闭">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+
+      <!-- 弹窗表单内容 -->
+      <div class="mt-3 space-y-5">
+        <div id="modalTypeBadgeRow" class="hidden">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[12px] font-medium bg-[#e6f4ff] text-[#1890ff] border border-[#91caff]">
+            <span>✎ 自定义违规原因（审核人员审核时手动填写）</span>
+          </span>
+        </div>
+
+        <div>
+          <label id="modalNameLabel" class="block text-[14px] text-[#303133] mb-2.5">原因名称</label>
+          <input
+            id="modalReasonName"
+            type="text"
+            placeholder="请输入原因名称"
+            class="w-full h-[42px] px-3.5 text-[14px] text-[#303133] border border-[#909399] rounded-[2px] focus:outline-none focus:border-[#1890ff] placeholder:text-[#909399]"
+          />
+          <p id="modalNameError" class="hidden text-[12px] text-[#f56c6c] mt-1">请输入原因名称</p>
+        </div>
+
+        <div>
+          <label id="modalMsgLabel" class="block text-[14px] text-[#303133] mb-2.5">提示消息：</label>
+          <textarea
+            id="modalPromptMsg"
+            rows="3"
+            placeholder="请输入提示消息"
+            class="w-full p-3.5 text-[14px] text-[#303133] border border-[#909399] rounded-[2px] focus:outline-none focus:border-[#1890ff] placeholder:text-[#909399] resize-none"
+          ></textarea>
+          <p id="modalMsgError" class="hidden text-[12px] text-[#f56c6c] mt-1">请输入提示消息</p>
+        </div>
+
+        <!-- 底部居中确认按钮 -->
+        <div class="pt-2 flex justify-center">
+          <button
+            onclick="submitReasonModal()"
+            class="w-[130px] h-[38px] bg-[#1890ff] hover:bg-[#40a9ff] active:bg-[#096dd9] text-white text-[14px] rounded-[4px] transition-colors shadow-sm"
+          >
+            确认
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 5. 全局 Toast 轻提示 ==================== -->
+  <div id="toastContainer" class="fixed top-6 left-1/2 -translate-x-1/2 z-[60] pointer-events-none"></div>
+
+  <!-- ==================== 6. 核心业务数据与交互逻辑 ==================== -->
+  <script>
+    /**
+     * 语言列表配置（严格还原截图左侧语言栏顺序）
+     */
+    const LANGUAGES = [
+      { code: 'en', label: '英文' },
+      { code: 'ja', label: '日语' },
+      { code: 'zh-CN', label: '中文-简体' },
+      { code: 'de', label: '德语' },
+      { code: 'it', label: '意大利语' },
+      { code: 'fr', label: '法语' },
+      { code: 'es', label: '西语' }
+    ];
+
+    /**
+     * 初始化各语言的“审核中心”多语言配置数据
+     * 1. report_reasons: 举报原因（Tag 标签类型）
+     * 2. video_reject: 视频审核违规/不通过选项（卡片类型：原因名称 + 提示消息）
+     * 3. follow_reject: 跟练视频审核不通过选项（卡片类型：原因名称 + 提示消息）
+     * 4. cocreate_reject: 共创视频审核不通过选项（卡片类型：原因名称 + 提示消息）
+     */
+    const auditCenterStore = {
+      'zh-CN': {
+        report_reasons: [
+          '作弊',
+          '骚扰或辱骂',
+          '垃圾信息或广告',
+          '误导性行为',
+          '危险行为',
+          '暴力威胁或暴力行为',
+          '性骚扰',
+          '儿童安全问题',
+          '冒充他人',
+          '其他'
+        ],
+        video_reject: [
+          {
+            id: 101,
+            name: '色情低俗类',
+            message: '您的视频包含色情低俗内容'
+          },
+          {
+            id: 102,
+            name: '血腥暴力或危险动作',
+            message: '您的视频包含血腥暴力或高危运动画面，请修改后重新提交'
+          }
+        ],
+        follow_reject: [
+          {
+            id: 201,
+            name: '动作不规范/画面遮挡',
+            message: '您的跟练视频存在关键动作遮挡或画面不清晰，暂未通过审核'
+          },
+          {
+            id: 202,
+            name: '背景音乐或内容违规',
+            message: '您的跟练视频包含违规音频或不当内容'
+          }
+        ],
+        cocreate_reject: [
+          {
+            id: 301,
+            name: '共创素材侵权或重复',
+            message: '您提交的共创视频存在素材重复或版权风险，请调整后重试'
+          },
+          {
+            id: 302,
+            name: '内容偏离共创主题',
+            message: '您的共创视频与当前活动主题不符，未能通过审核'
+          }
+        ]
+      },
+      'en': {
+        report_reasons: [
+          'Cheating',
+          'Harassment or Bullying',
+          'Spam or Advertising',
+          'Misleading Behavior',
+          'Dangerous Acts',
+          'Violence or Threats',
+          'Sexual Harassment',
+          'Child Safety',
+          'Impersonation',
+          'Other'
+        ],
+        video_reject: [
+          {
+            id: 1001,
+            name: 'Pornography & Vulgarity',
+            message: 'Your video contains sexually explicit or vulgar content.'
+          },
+          {
+            id: 1002,
+            name: 'Violence or Dangerous Behavior',
+            message: 'Your video depicts violent or unsafe physical activities.'
+          }
+        ],
+        follow_reject: [
+          {
+            id: 2001,
+            name: 'Obstructed View / Unclear Motion',
+            message: 'Your follow-along video is blurry or key movements are obstructed.'
+          }
+        ],
+        cocreate_reject: [
+          {
+            id: 3001,
+            name: 'Off-topic Co-creation',
+            message: 'Your co-creation video does not match the current campaign theme.'
+          }
+        ]
+      },
+      'ja': {
+        report_reasons: [
+          'チート・不正行為',
+          '嫌がらせ・誹謗中傷',
+          'スパム・広告',
+          '誤解を招く行為',
+          '危険行為',
+          '暴力・脅迫',
+          'セクシャルハラスメント',
+          '児童の安全',
+          'なりすまし',
+          'その他'
+        ],
+        video_reject: [
+          {
+            id: 4001,
+            name: 'わいせつ・公序良俗違反',
+            message: '動画に不適切な性的表現が含まれています。'
+          }
+        ],
+        follow_reject: [
+          {
+            id: 4002,
+            name: '映像不鮮明・動作遮蔽',
+            message: 'トレーニング動画の映像が不鮮明なため、審査を通過できませんでした。'
+          }
+        ],
+        cocreate_reject: [
+          {
+            id: 4003,
+            name: '共創テーマ不一致',
+            message: '共創動画の内容がテーマと一致していません。'
+          }
+        ]
+      }
+    };
+
+    // 为德语、意大利语、法语、西语初始化默认空模板，保证切换任意语言都可独立增删改查
+    ['de', 'it', 'fr', 'es'].forEach((langCode) => {
+      auditCenterStore[langCode] = {
+        report_reasons: ['Spam', 'Harassment', 'Other'],
+        video_reject: [],
+        follow_reject: [],
+        cocreate_reject: []
+      };
+    });
+
+    // 当前应用状态
+    let currentLang = 'zh-CN'; // 默认选中“中文-简体”
+    let currentTab = 'video_reject'; // 默认展示“视频审核违规/不通过选项”
+    let isAddingTag = false; // 举报原因Tab下是否正在输入新标签
+
+    // 拖拽排序状态
+    let dragSourceIndex = null;
+    let dragSourceType = null; // 'tag' | 'card'
+
+    // 弹窗编辑状态
+    let modalMode = 'add'; // 'add' | 'edit'
+    let modalReasonType = 'fixed'; // 'fixed' | 'custom'
+    let editingCardId = null;
+
+    /**
+     * 渲染左侧语言列表
+     */
+    function renderLanguageList() {
+      const container = document.getElementById('languageList');
+      container.innerHTML = LANGUAGES.map((lang) => {
+        const isActive = lang.code === currentLang;
+        return `
+          <li
+            onclick="selectLanguage('${lang.code}')"
+            class="h-[52px] px-4 flex items-center justify-center text-[14px] cursor-pointer transition-colors ${
+              isActive
+                ? 'bg-[#263445] text-white font-medium'
+                : 'bg-white text-[#303133] hover:bg-[#f5f7fa]'
+            }"
+          >
+            ${lang.label}
+          </li>
+        `;
+      }).join('');
+
+      const activeLangObj = LANGUAGES.find((l) => l.code === currentLang);
+      document.getElementById('currentLangBadge').textContent = `当前编辑语言：${activeLangObj ? activeLangObj.label : ''}`;
+    }
+
+    /**
+     * 切换左侧语言
+     */
+    function selectLanguage(langCode) {
+      currentLang = langCode;
+      isAddingTag = false;
+      renderLanguageList();
+      renderTabContent();
+    }
+
+    /**
+     * 更新 4 个子 Tab 的高亮样式并渲染对应内容
+     */
+    function switchTab(tabKey) {
+      currentTab = tabKey;
+      isAddingTag = false;
+
+      const tabs = ['report_reasons', 'video_reject', 'follow_reject', 'cocreate_reject'];
+      tabs.forEach((key) => {
+        const btn = document.getElementById(`tab-${key}`);
+        if (key === currentTab) {
+          btn.className = 'tab-btn relative pb-3 text-[14px] font-medium whitespace-nowrap text-[#1890ff] border-b-2 border-[#1890ff] transition-colors';
+        } else {
+          btn.className = 'tab-btn relative pb-3 text-[14px] font-normal whitespace-nowrap text-[#303133] hover:text-[#1890ff] border-b-2 border-transparent transition-colors';
+        }
+      });
+
+      renderTabContent();
+    }
+
+    /**
+     * 渲染当前 Tab 的主体内容
+     */
+    function renderTabContent() {
+      const container = document.getElementById('tabContentArea');
+      const langData = auditCenterStore[currentLang];
+
+      // 类型 A：举报原因（支持拖拽排序的 Tag 标签流 + 灰色横条保存栏）
+      if (currentTab === 'report_reasons') {
+        const tags = langData.report_reasons || [];
+        const tagsHtml = tags
+          .map(
+            (tag, idx) => `
+            <span
+              draggable="true"
+              data-index="${idx}"
+              ondragstart="handleDragStart(event, 'tag', ${idx})"
+              ondragover="handleDragOver(event)"
+              ondragenter="handleDragEnter(event)"
+              ondragleave="handleDragLeave(event)"
+              ondrop="handleDrop(event, 'tag', ${idx})"
+              ondragend="handleDragEnd(event)"
+              title="按住可拖拽调整顺序"
+              class="group inline-flex items-center gap-1.5 h-[32px] px-2.5 text-[12px] text-[#409eff] bg-[#ecf5ff] border border-[#d9ecff] rounded-[4px] transition-all hover:bg-[#e1f0ff] cursor-grab active:cursor-grabbing"
+            >
+              <svg class="w-3 h-3 text-[#8cc5ff] group-hover:text-[#409eff] flex-shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                <circle cx="5.5" cy="3.5" r="1.2"/><circle cx="10.5" cy="3.5" r="1.2"/>
+                <circle cx="5.5" cy="8" r="1.2"/><circle cx="10.5" cy="8" r="1.2"/>
+                <circle cx="5.5" cy="12.5" r="1.2"/><circle cx="10.5" cy="12.5" r="1.2"/>
+              </svg>
+              <span>${escapeHtml(tag)}</span>
+              <button
+                onclick="removeReportTag(${idx})"
+                onmousedown="event.stopPropagation()"
+                class="w-4 h-4 rounded-full inline-flex items-center justify-center text-[#409eff] hover:bg-[#409eff] hover:text-white transition-colors"
+                title="删除标签"
+              >×</button>
+            </span>
+          `
+          )
+          .join('');
+
+        const addActionHtml = isAddingTag
+          ? `<input
+              id="newTagInput"
+              type="text"
+              placeholder="输入后按回车"
+              onkeydown="handleNewTagKeydown(event)"
+              onblur="confirmAddReportTag()"
+              class="h-[32px] w-[120px] px-2.5 text-[12px] text-[#303133] bg-white border border-[#409eff] rounded-[4px] focus:outline-none"
+            />`
+          : `<button
+              onclick="startAddReportTag()"
+              class="inline-flex items-center gap-1 h-[32px] px-3 text-[12px] text-[#606266] bg-white border border-[#dcdfe6] hover:border-[#409eff] hover:text-[#409eff] rounded-[4px] transition-colors"
+            >
+              <span>+</span>
+              <span>添加</span>
+            </button>`;
+
+        container.innerHTML = `
+          <div class="pt-1">
+            <!-- 拖拽操作提示 -->
+            <div class="flex items-center gap-1.5 text-[12px] text-[#909399] mb-3 pl-8">
+              <svg class="w-3.5 h-3.5 text-[#409eff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+              </svg>
+              <span>提示：按住任意标签左右拖动，即可手动调整显示顺序</span>
+            </div>
+
+            <!-- 标签展示与新增行 -->
+            <div class="flex items-start gap-3 mb-7">
+              <div class="h-[32px] flex items-center text-[14px] text-[#606266] whitespace-nowrap flex-shrink-0 pl-8">
+                <span class="text-[#f56c6c] mr-1">*</span>标签：
+              </div>
+              <div class="flex flex-wrap items-center gap-2.5">
+                ${tagsHtml}
+                ${addActionHtml}
+              </div>
+            </div>
+
+            <!-- 底部灰色带状保存条（还原图3布局） -->
+            <div class="w-full bg-[#f5f5f5] py-3.5 px-8 flex justify-end items-center rounded-[2px]">
+              <button
+                onclick="handleSaveConfig()"
+                class="w-[140px] h-[40px] bg-[#1890ff] hover:bg-[#40a9ff] active:bg-[#096dd9] text-white text-[14px] rounded-[4px] transition-colors shadow-sm mr-12"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        `;
+
+        if (isAddingTag) {
+          setTimeout(() => {
+            const input = document.getElementById('newTagInput');
+            if (input) input.focus();
+          }, 0);
+        }
+        return;
+      }
+
+      // 类型 B：1、视频审核违规/不通过选项；2、跟练视频审核不通过选项；3、共创视频审核不通过选项（支持拖拽排序 + 自定义违规原因）
+      const cardList = langData[currentTab] || [];
+      const hasCustomReason = cardList.some((item) => item.isCustom);
+
+      const cardsHtml = cardList
+        .map((item, idx) => {
+          const isCustom = Boolean(item.isCustom);
+          return `
+          <div
+            draggable="true"
+            data-index="${idx}"
+            ondragstart="handleDragStart(event, 'card', ${idx})"
+            ondragover="handleDragOver(event)"
+            ondragenter="handleDragEnter(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleDrop(event, 'card', ${idx})"
+            ondragend="handleDragEnd(event)"
+            title="按住卡片可拖拽调整顺序"
+            class="${isCustom ? 'reason-card-custom' : 'reason-card'} w-[300px] min-h-[86px] rounded-[10px] px-5 py-4 relative flex flex-col justify-center gap-2 cursor-grab active:cursor-grabbing group"
+          >
+            <!-- 左上角拖拽手柄 & 自定义徽标 -->
+            <div class="flex items-center justify-between pr-12">
+              <div class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-[#909399] group-hover:text-[#1890ff] flex-shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                  <circle cx="5.5" cy="3.5" r="1.2"/><circle cx="10.5" cy="3.5" r="1.2"/>
+                  <circle cx="5.5" cy="8" r="1.2"/><circle cx="10.5" cy="8" r="1.2"/>
+                  <circle cx="5.5" cy="12.5" r="1.2"/><circle cx="10.5" cy="12.5" r="1.2"/>
+                </svg>
+                ${
+                  isCustom
+                    ? `<span class="px-1.5 py-0.5 text-[11px] leading-none font-medium rounded bg-[#1890ff] text-white">自定义违规原因</span>`
+                    : `<span class="text-[11px] text-[#909399]">排序 #${idx + 1}</span>`
+                }
+              </div>
+            </div>
+
+            <!-- 右上角 编辑 & 删除 操作按钮 -->
+            <div class="absolute right-3.5 top-3.5 flex items-center gap-2 text-[#303133]" onmousedown="event.stopPropagation()">
+              <button
+                onclick="openReasonModal('edit', ${item.id})"
+                class="p-1 text-[#303133] hover:text-[#1890ff] transition-colors"
+                title="编辑"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button
+                onclick="deleteReasonCard(${item.id})"
+                class="p-1 text-[#303133] hover:text-[#f56c6c] transition-colors"
+                title="删除"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="text-[13px] text-[#303133] pr-6 leading-snug break-words">
+              <span class="text-[#606266]">原因名称：</span><span class="font-medium">${escapeHtml(item.name)}</span>
+            </div>
+            <div class="text-[13px] text-[#303133] leading-snug break-words">
+              <span class="text-[#606266]">${isCustom ? '填写说明：' : '提示消息：'}</span><span>${escapeHtml(item.message)}</span>
+            </div>
+          </div>
+        `;
+        })
+        .join('');
+
+      container.innerHTML = `
+        <div class="pt-1">
+          <!-- 拖拽操作提示 -->
+          <div class="flex items-center gap-1.5 text-[12px] text-[#909399] mb-4">
+            <svg class="w-3.5 h-3.5 text-[#409eff]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+            </svg>
+            <span>提示：按住卡片拖动可调整选项展示顺序；支持添加“自定义违规原因”供审核人员手动填写</span>
+          </div>
+
+          <!-- 卡片横向流式网格 -->
+          <div class="flex flex-wrap items-center gap-6 mb-16">
+            ${cardsHtml}
+
+            <!-- 末尾 +添加 卡片按钮 -->
+            <button
+              onclick="openReasonModal('add', null, 'fixed')"
+              class="add-card-btn w-[148px] h-[68px] rounded-[10px] bg-white flex items-center justify-center text-[14px] text-[#303133] cursor-pointer"
+            >
+              +添加
+            </button>
+
+            <!-- 新增：+添加自定义违规原因 按钮 -->
+            <button
+              onclick="openReasonModal('add', null, 'custom')"
+              ${hasCustomReason ? 'disabled title="当前语言该分类下已添加自定义违规原因，可直接编辑或拖拽排序"' : 'title="添加后审核人员在审核时可手动填写具体违规原因"'}
+              class="add-custom-card-btn px-4 h-[68px] rounded-[10px] flex flex-col items-center justify-center gap-0.5 text-[13px] cursor-pointer"
+            >
+              <span class="font-medium">${hasCustomReason ? '✓ 已添加自定义违规原因' : '+ 添加自定义违规原因'}</span>
+              <span class="text-[11px] opacity-80">${hasCustomReason ? '审核人员审核时手动填写' : '供审核人员手动填写原因'}</span>
+            </button>
+          </div>
+
+          <!-- 下方居中蓝色保存按钮（还原图1位置） -->
+          <div class="w-full max-w-[960px] flex justify-center pt-4">
+            <button
+              onclick="handleSaveConfig()"
+              class="w-[156px] h-[42px] bg-[#1890ff] hover:bg-[#40a9ff] active:bg-[#096dd9] text-white text-[14px] rounded-[6px] transition-colors shadow-sm"
+            >
+              保存
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * ==================== HTML5 原生拖拽排序逻辑 ====================
+     */
+    function handleDragStart(event, type, index) {
+      dragSourceType = type;
+      dragSourceIndex = index;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(index));
+      setTimeout(() => {
+        if (event.target) {
+          event.target.classList.add('dragging-item');
+        }
+      }, 0);
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDragEnter(event) {
+      event.preventDefault();
+      const target = event.currentTarget;
+      if (target && Number(target.dataset.index) !== dragSourceIndex) {
+        target.classList.add('drag-over-target');
+      }
+    }
+
+    function handleDragLeave(event) {
+      const target = event.currentTarget;
+      if (target && !target.contains(event.relatedTarget)) {
+        target.classList.remove('drag-over-target');
+      }
+    }
+
+    function handleDrop(event, type, targetIndex) {
+      event.preventDefault();
+      const target = event.currentTarget;
+      if (target) {
+        target.classList.remove('drag-over-target');
+      }
+
+      if (dragSourceType !== type || dragSourceIndex === null || dragSourceIndex === targetIndex) {
+        return;
+      }
+
+      if (type === 'tag') {
+        const list = auditCenterStore[currentLang].report_reasons;
+        const [movedItem] = list.splice(dragSourceIndex, 1);
+        list.splice(targetIndex, 0, movedItem);
+        renderTabContent();
+        showToast(`已调整标签「${movedItem}」的位置`, 'success');
+      } else if (type === 'card') {
+        const list = auditCenterStore[currentLang][currentTab];
+        const [movedItem] = list.splice(dragSourceIndex, 1);
+        list.splice(targetIndex, 0, movedItem);
+        renderTabContent();
+        showToast(`已调整「${movedItem.name}」的排序`, 'success');
+      }
+    }
+
+    function handleDragEnd(event) {
+      if (event.target) {
+        event.target.classList.remove('dragging-item');
+      }
+      document.querySelectorAll('.drag-over-target').forEach((el) => {
+        el.classList.remove('drag-over-target');
+      });
+      dragSourceIndex = null;
+      dragSourceType = null;
+    }
+
+    /**
+     * ==================== 举报原因 Tag 标签操作 ====================
+     */
+    function startAddReportTag() {
+      isAddingTag = true;
+      renderTabContent();
+    }
+
+    function handleNewTagKeydown(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        confirmAddReportTag();
+      } else if (event.key === 'Escape') {
+        isAddingTag = false;
+        renderTabContent();
+      }
+    }
+
+    function confirmAddReportTag() {
+      const input = document.getElementById('newTagInput');
+      if (!input) return;
+      const val = input.value.trim();
+      if (val) {
+        const list = auditCenterStore[currentLang].report_reasons;
+        if (!list.includes(val)) {
+          list.push(val);
+          showToast(`已添加标签「${val}」`, 'success');
+        } else {
+          showToast('该标签已存在', 'warning');
+        }
+      }
+      isAddingTag = false;
+      renderTabContent();
+    }
+
+    function removeReportTag(index) {
+      const removed = auditCenterStore[currentLang].report_reasons.splice(index, 1);
+      renderTabContent();
+      if (removed.length) {
+        showToast(`已移除标签「${removed[0]}」`, 'info');
+      }
+    }
+
+    /**
+     * ==================== 审核不通过选项（卡片 & 弹窗）操作 ====================
+     */
+    function openReasonModal(mode, cardId = null, reasonType = 'fixed') {
+      modalMode = mode;
+      editingCardId = cardId;
+      modalReasonType = reasonType;
+
+      const nameInput = document.getElementById('modalReasonName');
+      const msgInput = document.getElementById('modalPromptMsg');
+      const badgeRow = document.getElementById('modalTypeBadgeRow');
+      const nameLabel = document.getElementById('modalNameLabel');
+      const msgLabel = document.getElementById('modalMsgLabel');
+
+      document.getElementById('modalNameError').classList.add('hidden');
+      document.getElementById('modalMsgError').classList.add('hidden');
+
+      if (mode === 'edit' && cardId !== null) {
+        const list = auditCenterStore[currentLang][currentTab] || [];
+        const target = list.find((item) => item.id === cardId);
+        if (target) {
+          modalReasonType = target.isCustom ? 'custom' : 'fixed';
+          nameInput.value = target.name;
+          msgInput.value = target.message;
+        }
+      } else if (reasonType === 'custom') {
+        // 预设默认多语言展示名称与提示，支持管理员直接确认或微调
+        const defaultCustomNames = {
+          'zh-CN': '其他违规原因（自定义）',
+          'en': 'Other / Custom Reason',
+          'ja': 'その他の違反理由（自由入力）',
+          'de': 'Sonstiger Grund (Benutzerdefiniert)',
+          'it': 'Altro motivo (Personalizzato)',
+          'fr': 'Autre motif (Personnalisé)',
+          'es': 'Otro motivo (Personalizado)'
+        };
+        const defaultCustomMsgs = {
+          'zh-CN': '审核人员在审核不通过时手动填写具体违规原因并发送给用户',
+          'en': 'Moderator manually enters the specific rejection reason during review',
+          'ja': '審査担当者が審査時に具体的な違反理由を手動で入力します',
+          'de': 'Prüfer gibt den genauen Ablehnungsgrund manuell ein',
+          'it': 'Il revisore inserisce manualmente il motivo specifico',
+          'fr': 'Le modérateur saisit manuellement le motif précis',
+          'es': 'El moderador ingresa manualmente el motivo específico'
+        };
+        nameInput.value = defaultCustomNames[currentLang] || '自定义违规原因';
+        msgInput.value = defaultCustomMsgs[currentLang] || '审核人员审核时手动填写具体违规原因';
+      } else {
+        nameInput.value = '';
+        msgInput.value = '';
+      }
+
+      if (modalReasonType === 'custom') {
+        badgeRow.classList.remove('hidden');
+        nameLabel.textContent = '选项显示名称（如：其他违规原因）';
+        msgLabel.textContent = '填写说明 / 默示提示：';
+      } else {
+        badgeRow.classList.add('hidden');
+        nameLabel.textContent = '原因名称';
+        msgLabel.textContent = '提示消息：';
+      }
+
+      const modal = document.getElementById('reasonModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => nameInput.focus(), 50);
+    }
+
+    function closeReasonModal() {
+      const modal = document.getElementById('reasonModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function submitReasonModal() {
+      const nameInput = document.getElementById('modalReasonName');
+      const msgInput = document.getElementById('modalPromptMsg');
+      const nameError = document.getElementById('modalNameError');
+      const msgError = document.getElementById('modalMsgError');
+
+      const nameVal = nameInput.value.trim();
+      const msgVal = msgInput.value.trim();
+
+      let hasError = false;
+      if (!nameVal) {
+        nameError.classList.remove('hidden');
+        hasError = true;
+      } else {
+        nameError.classList.add('hidden');
+      }
+
+      if (!msgVal) {
+        msgError.classList.remove('hidden');
+        hasError = true;
+      } else {
+        msgError.classList.add('hidden');
+      }
+
+      if (hasError) return;
+
+      const list = auditCenterStore[currentLang][currentTab];
+
+      if (modalMode === 'add') {
+        list.push({
+          id: Date.now(),
+          name: nameVal,
+          message: msgVal,
+          isCustom: modalReasonType === 'custom'
+        });
+        showToast(modalReasonType === 'custom' ? '已添加自定义违规原因' : '添加成功', 'success');
+      } else if (modalMode === 'edit') {
+        const target = list.find((item) => item.id === editingCardId);
+        if (target) {
+          target.name = nameVal;
+          target.message = msgVal;
+          showToast('修改已更新', 'success');
+        }
+      }
+
+      closeReasonModal();
+      renderTabContent();
+    }
+
+    function deleteReasonCard(cardId) {
+      const list = auditCenterStore[currentLang][currentTab];
+      const index = list.findIndex((item) => item.id === cardId);
+      if (index !== -1) {
+        const [deleted] = list.splice(index, 1);
+        renderTabContent();
+        showToast(`已删除「${deleted.name}」`, 'info');
+      }
+    }
+
+    /**
+     * ==================== 保存配置与辅助交互 ====================
+     */
+    function handleSaveConfig() {
+      const langObj = LANGUAGES.find((l) => l.code === currentLang);
+      const tabNames = {
+        report_reasons: '举报原因',
+        video_reject: '视频审核违规/不通过选项',
+        follow_reject: '跟练视频审核不通过选项',
+        cocreate_reject: '共创视频审核不通过选项'
+      };
+      showToast(`【${langObj.label} - ${tabNames[currentTab]}】配置保存成功！`, 'success');
+    }
+
+    function toggleSystemSubmenu() {
+      const submenu = document.getElementById('systemSubmenu');
+      const arrow = document.getElementById('systemArrow');
+      submenu.classList.toggle('hidden');
+      arrow.classList.toggle('rotate-180');
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('mainSidebar');
+      if (sidebar.style.width === '0px') {
+        sidebar.style.width = '210px';
+      } else {
+        sidebar.style.width = '0px';
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        success: 'bg-[#f0f9eb] border-[#e1f3d8] text-[#67c23a]',
+        warning: 'bg-[#fdf6ec] border-[#faecd8] text-[#e6a23c]',
+        info: 'bg-[#edf2fc] border-[#ebeef5] text-[#909399]'
+      };
+      const icons = {
+        success: '✓',
+        warning: '!',
+        info: 'i'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `toast-animate mb-2 px-4 py-2.5 rounded-[4px] border shadow-md flex items-center gap-2.5 text-[13px] font-medium ${colors[type] || colors.success}`;
+      toast.innerHTML = `
+        <span class="w-4 h-4 rounded-full bg-current text-white flex items-center justify-center text-[10px] font-bold">
+          <span class="text-white">${icons[type] || '✓'}</span>
+        </span>
+        <span>${escapeHtml(message)}</span>
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.2s ease';
+        setTimeout(() => toast.remove(), 200);
+      }, 2400);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // 支持点击弹窗遮罩层关闭
+    document.getElementById('reasonModal').addEventListener('click', function (e) {
+      if (e.target === this) {
+        closeReasonModal();
+      }
+    });
+
+    // 初始化渲染页面
+    window.addEventListener('DOMContentLoaded', () => {
+      renderLanguageList();
+      switchTab('video_reject');
+    });
+  </script>
+</body>
+</html>
